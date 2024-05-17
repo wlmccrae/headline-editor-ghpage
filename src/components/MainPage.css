@@ -1,0 +1,22 @@
+.button {
+    font-weight: bold;
+}
+
+.content {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.initialdisplay {
+    padding: 20px
+}
+
+.searches {
+    margin-top: 20px;
+}
+
+.search-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
