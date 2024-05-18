@@ -4,16 +4,21 @@ import Footer from './components/Footer';
 import './App.css';
 import { ChakraProvider } from '@chakra-ui/react';
 
+function TestPage() {
+  return <div>Test Page</div>
+}
+
 function App() {
   return (
-    <ChakraProvider>
+    // <ChakraProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<MainPage/>} />
+          <Route path="/" element={<MainPage />} />
+          <Route path="/test" element={<TestPage />} />
         </Routes>
-        <Footer />
+        {/* <Footer /> */}
       </BrowserRouter>
-    </ChakraProvider>
+    // </ChakraProvider>
   );
 }
 
