@@ -1,24 +1,22 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+// import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import MainPage from './components/MainPage';
 import Footer from './components/Footer';
 import './App.css';
 import { ChakraProvider } from '@chakra-ui/react';
 
-function TestPage() {
-  return <div>Test Page</div>
-}
-
 function App() {
   return (
-    // <ChakraProvider>
+    <ChakraProvider>
       <BrowserRouter>
-        <Routes>
+        {/* <Routes>
           <Route path="/" element={<MainPage />} />
           <Route path="/test" element={<TestPage />} />
-        </Routes>
-        {/* <Footer /> */}
+        </Routes> */}
+        <MainPage />
+        <Footer />
       </BrowserRouter>
-    // </ChakraProvider>
+    </ChakraProvider>
   );
 }
 
