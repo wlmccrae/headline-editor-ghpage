@@ -95,19 +95,19 @@ function MainPage() {
         <div className="content">
             <div className="searches">
                 <Center><Heading size='xl' marginBottom='10px' >Search the NY Times Archive</Heading></Center>
-                <Card className="search-card" width='400px' boxShadow='lg' border='1px' borderColor='gray.100'>
+                <Card bg="brand.200" className="search-card" width='400px' boxShadow='lg' border='1px' borderColor='gray.100'>
                     <CardHeader>
-                        <Heading size='sm'>Retrieve all articles for a particular month.</Heading>
+                        <Heading size='sm' color="brand.100">Retrieve all articles for a particular month.</Heading>
                     </CardHeader>
                     <CardBody>
                         <form id='archive-form'>
                             <Stack spacing={1}>
                                 <InputGroup>
-                                    <InputLeftAddon w='120px'>Year (YYYY)</InputLeftAddon>
-                                    <Input onChange={handleChange} type="text" id="year" name="year" placeholder="2024" variant='outline' width='100px'/>
+                                    <InputLeftAddon w='120px' color="brand.100">Year (YYYY)</InputLeftAddon>
+                                    <Input onChange={handleChange} type="text" id="year" name="year" placeholder="2024" variant='outline' width='100px' color="brand.300"/>
                                 </InputGroup>
                                 <InputGroup>
-                                    <InputLeftAddon w='120px'>Month (M)</InputLeftAddon>
+                                    <InputLeftAddon w='120px' color="brand.100">Month (M)</InputLeftAddon>
                                     <Input onChange={handleChange} type="text" id="month" name="month" placeholder="5" variant='outline' width='100px'/>
                                 </InputGroup>
                             </Stack>

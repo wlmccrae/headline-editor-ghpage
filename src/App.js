@@ -1,18 +1,23 @@
-// import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { BrowserRouter } from 'react-router-dom';
 import MainPage from './components/MainPage';
 import Footer from './components/Footer';
 import './App.css';
-import { ChakraProvider } from '@chakra-ui/react';
+import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 
 function App() {
+  const theme = extendTheme({
+    colors: {
+      brand: {
+        100: "#08276b",  // Text: Deep Sapphire Tint 0%
+        200: "#e6e9f0",  // Background: Deep Sapphire Tint 90%
+        300: "#ffffff",
+      },
+    },
+  })
+
   return (
-    <ChakraProvider>
+    <ChakraProvider theme={theme}>
       <BrowserRouter>
-        {/* <Routes>
-          <Route path="/" element={<MainPage />} />
-          <Route path="/test" element={<TestPage />} />
-        </Routes> */}
         <MainPage />
         <Footer />
       </BrowserRouter>
