@@ -94,7 +94,7 @@ function MainPage() {
     return (
         <div className="content">
             <div className="searches">
-                <Center><Heading size='xl' marginBottom='10px' >Search the NY Times Archive</Heading></Center>
+                <Center><Heading size='xl' marginBottom='10px' color="brand.100">Headline Editor</Heading></Center>
                 <Card bg="brand.200" className="search-card" width='400px' boxShadow='lg' border='1px' borderColor='gray.100'>
                     <CardHeader>
                         <Heading size='sm' color="brand.100">Retrieve all articles for a particular month.</Heading>
@@ -104,20 +104,20 @@ function MainPage() {
                             <Stack spacing={1}>
                                 <InputGroup>
                                     <InputLeftAddon w='120px' color="brand.100">Year (YYYY)</InputLeftAddon>
-                                    <Input onChange={handleChange} type="text" id="year" name="year" placeholder="2024" variant='outline' width='100px' color="brand.300"/>
+                                    <Input onChange={handleChange} type="text" id="year" name="year" placeholder="2024" variant='outline' width='100px' bg="brand.300"/>
                                 </InputGroup>
                                 <InputGroup>
                                     <InputLeftAddon w='120px' color="brand.100">Month (M)</InputLeftAddon>
-                                    <Input onChange={handleChange} type="text" id="month" name="month" placeholder="5" variant='outline' width='100px'/>
+                                    <Input onChange={handleChange} type="text" id="month" name="month" placeholder="5" variant='outline' width='100px' bg="brand.300"/>
                                 </InputGroup>
                             </Stack>
                         </form>
                     </CardBody>
-                    <Divider color='gray.200' />
+                    <Divider color="brand.200" />
                     <CardFooter>
                         <Stack spacing={2} direction='row' align='center'>
-                            <Button onClick={fetchArchive} className="button" size='sm'>Search</Button>
-                            <Button onClick={resetPage} className="button" size='sm'>Reset Page</Button>
+                            <Button onClick={fetchArchive} className="button" size='sm' color="brand.300" bg="brand.100">Search</Button>
+                            <Button onClick={resetPage} className="button" size='sm' color="brand.100" bg="brand.300">Reset Page</Button>
                         </Stack>
                     </CardFooter>
                 </Card>

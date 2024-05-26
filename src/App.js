@@ -10,7 +10,7 @@ function App() {
       brand: {
         100: "#08276b",  // Text: Deep Sapphire Tint 0%
         200: "#e6e9f0",  // Background: Deep Sapphire Tint 90%
-        300: "#ffffff",
+        300: "#ffffff",  // Standard white
       },
     },
   })

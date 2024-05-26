@@ -73,14 +73,14 @@ function SearchResults(props) {
     }, [myArticle]);
 
     return (
-        <div className="search-results">
-            <Divider color='gray.200' marginTop='20px' />
-            <div className="article-list">
+        <div>
+            <Divider marginTop='20px'/>
+            <div className="search-results">
                 <Flex height='auto'>
-                    <Box width='38%' borderRight='1px' borderColor='gray.200'>
-                        <Heading pt='30px' pb='10px' size='md'>NY Times Archive for { props.formData.year } { monthDict[props.formData.month] }</Heading>
+                    <Box className="article-list"width='38%' borderRight='1px' borderColor='brand.200'>
+                        <Heading pt='30px' pb='10px' size='md' color="brand.100">NY Times Archive for { props.formData.year } { monthDict[props.formData.month] }</Heading>
                         <form id="select-article">
-                            <Select value={myArticle._id} onChange={handleChange} placeholder='Click to Select Article' size='sm' variant='filled' width='50%' paddingBottom='10px'>
+                            <Select value={myArticle._id} onChange={handleChange} placeholder='Click to Select Article' size='sm' variant='filled' width='50%' paddingBottom='10px' color="brand.100">
                                 {props.articleData.map(article => {
                                     return (
                                         <option key={article._id} value={article._id}>
@@ -93,11 +93,11 @@ function SearchResults(props) {
                         { articleLoaded && myArticle.headline &&
                             <VStack spacing='5px' paddingTop='20px' paddingRight='10px' justifyContent='left'>
                                 <Input onChange={editHeadline} type="text" id="editheadline" name="editheadline" placeholder="Edit the headline" />
-                                <Button onClick={handleEdit} size='sm' className='button' >Edit</Button>
+                                <Button onClick={handleEdit} size='sm' className='button' color="brand.300" bg="brand.100">Edit</Button>
                             </VStack>
                         }
                     </Box>
-                    <Box className='article-display' width='60%' paddingLeft='15px'>
+                    <Box className='article-display' width='60%' paddingLeft='15px' bg="brand.200" color="brand.100">
                         { articleLoaded && myArticle.headline ?
                             <>
                                 <Heading size='sm' paddingTop='10px'>{myArticle.headline.main}</Heading>
@@ -111,8 +111,8 @@ function SearchResults(props) {
                         : <Text paddingTop='10px'>Please select an article.</Text>}
                     </Box>
                 </Flex>
+                <Text className="copyright" fontSize='sm' marginTop='30px'>All articles are {props.copyright}</Text>
             </div>
-            <Text className="copyright" fontSize='sm' marginTop='30px'>All articles are {props.copyright}</Text>
         </div>
     );
 };
