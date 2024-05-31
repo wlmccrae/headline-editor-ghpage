@@ -67,6 +67,9 @@ function MainPage() {
         } else if (formYear < 1851 || formYear > currentYear) {
             setYearError(true);
             setYearErrorMessage(`Enter a year between 1851 and ${currentYear}.`);
+        } else if ((formYear < currentYear) && (formMonth > 12)) {
+            setMonthError(true);
+            setMonthErrorMessage('Enter a month between 1 and 12.');
         } else if (formYear === currentYear && (formMonth > currentMonth)) {
             setMonthError(true);
             setMonthErrorMessage(`Enter a month between 1 and ${currentMonth}.`);
