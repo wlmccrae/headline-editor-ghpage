@@ -53,10 +53,14 @@ function MainPage() {
         const currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
         currentMonth++;  // Increase by one, as the Date objects has Jan = 0.
+        console.log(`***** System Year: ${currentYear}. System Month: ${currentMonth}`);
+        console.log(`***** Form Year: ${archiveFormData.year}. Form Month: ${archiveFormData.month}`);
         if (archiveFormData.year < 1851 || archiveFormData.year > currentYear) {
+            console.log('!!!!! Year error!');
             setYearError(true);
             setYearErrorMessage(`Enter a year between 1851 and ${currentYear}.`);
-        } else if (archiveFormData.month > currentMonth || !Number.isInteger(archiveFormData.month)) {
+        } else if (archiveFormData.month > currentMonth) {
+            console.log('!!!!! Month error!');
             setMonthError(true);
             setMonthErrorMessage(`Enter a month between 1 and ${currentMonth}.`);
         } else {
