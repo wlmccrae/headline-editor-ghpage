@@ -23,6 +23,8 @@ function MainPage() {
     const [yearErrorMessage, setYearErrorMessage] = useState("");
     const [monthError, setMonthError] = useState(false);
     const [monthErrorMessage, setMonthErrorMessage] = useState('');
+    const [formatError, setFormatError] = useState(false);
+    const [formatErrorMessage, setFormatErrorMessage] = useState('');
 
     const API_KEY = process.env.REACT_APP_NYT_API_KEY;
 
@@ -42,6 +44,8 @@ function MainPage() {
         setYearErrorMessage("");
         setMonthError(false);
         setMonthErrorMessage('');
+        setFormatError(false);
+        setFormatErrorMessage('');
     };
 
     // Handle the search button.
@@ -53,14 +57,17 @@ function MainPage() {
 
         const currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
-        currentMonth++;  // Increase by one, as the Date objects has Jan = 0.
+        currentMonth++;  // Increase by one, as the Date object has Jan = 0.
         const formMonth = parseInt(archiveFormData.month);
         const formYear = parseInt(archiveFormData.year);
 
-        if (formYear < 1851 || formYear > currentYear || !Number.isInteger(formYear)) {
+        if (!Number.isInteger(formYear) || !Number.isInteger(formMonth)) {
+            setFormatError(true);
+            setFormatErrorMessage('Enter the year as 4 digits (YYYY) and the month as a number between 1 and 12');
+        } else if (formYear < 1851 || formYear > currentYear) {
             setYearError(true);
             setYearErrorMessage(`Enter a year between 1851 and ${currentYear}.`);
-        } else if (formYear < 1851  && (archiveFormData.month > currentMonth || !Number.isInteger(formMonth))) {
+        } else if (formYear === currentYear && (formMonth > currentMonth)) {
             setMonthError(true);
             setMonthErrorMessage(`Enter a month between 1 and ${currentMonth}.`);
         } else {
@@ -71,10 +78,12 @@ function MainPage() {
                 setCopyright(archiveData.copyright);
                 setResultsLoaded(true);
                 setarticleList(archiveData.response.docs);
-                setYearErrorMessage("");
                 setYearError(false);
+                setYearErrorMessage("");
                 setMonthError(false);
                 setMonthErrorMessage('');
+                setFormatError(false);
+                setFormatErrorMessage('');
             } else {
                 window.confirm("There was a problem fetching the NY Times archive.")
             };
@@ -158,6 +167,12 @@ function MainPage() {
                         <Alert status='error'>
                             <AlertIcon />
                             { monthErrorMessage }
+                        </Alert>
+                    }
+                    { formatError &&
+                        <Alert status='error'>
+                            <AlertIcon />
+                            { formatErrorMessage }
                         </Alert>
                     }
                 </Card>
