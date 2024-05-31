@@ -48,19 +48,19 @@ function MainPage() {
     const fetchArchive = async (event) => {
         const archiveURL = `https://corsproxy.io/?https://api.nytimes.com/svc/archive/v1/${archiveFormData.year}/${archiveFormData.month}.json?api-key=${API_KEY}`;
         event.preventDefault();
+        setResultsLoaded(false);
         setFormDate(archiveFormData);
 
         const currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
         currentMonth++;  // Increase by one, as the Date objects has Jan = 0.
-        console.log(`***** System Year: ${currentYear}. System Month: ${currentMonth}`);
-        console.log(`***** Form Year: ${archiveFormData.year}. Form Month: ${archiveFormData.month}`);
-        if (archiveFormData.year < 1851 || archiveFormData.year > currentYear) {
-            console.log('!!!!! Year error!');
+        const formMonth = parseInt(archiveFormData.month);
+        const formYear = parseInt(archiveFormData.year);
+
+        if (formYear < 1851 || formYear > currentYear || !Number.isInteger(formYear)) {
             setYearError(true);
             setYearErrorMessage(`Enter a year between 1851 and ${currentYear}.`);
-        } else if (archiveFormData.month > currentMonth) {
-            console.log('!!!!! Month error!');
+        } else if (formYear < 1851  && (archiveFormData.month > currentMonth || !Number.isInteger(formMonth))) {
             setMonthError(true);
             setMonthErrorMessage(`Enter a month between 1 and ${currentMonth}.`);
         } else {
