@@ -32,6 +32,9 @@ function SearchResults(props) {
     const [myArticleImageUrl, setMyArticleImageUrl] = useState('');
     const [articleLoaded, setArticleLoaded] = useState(false);
     const [userHeadline, setUserHeadline] = useState('');
+    const [articleYear, setArticleYear] = useState(0);
+    const [articleDay, setArticleDay] = useState(0);
+    const [articleMonth, setArticleMonth] = useState(0);
 
     // Set the ID for the selected article.
     const handleChange = async (event) => {
@@ -57,6 +60,12 @@ function SearchResults(props) {
     useEffect(() => {
         // Load that article's data when myArticleId changes.
         const foundArticle = props.articleData.find(article => article._id === myArticleId);
+        if (foundArticle !== undefined) {
+            const rawDate = new Date(foundArticle.pub_date);
+            setArticleMonth(rawDate.getMonth() + 1);
+            setArticleYear(rawDate.getFullYear());
+            setArticleDay(rawDate.getDate());
+        };
         setMyArticle(foundArticle || {});
         setArticleLoaded(false); // Reset articleLoaded to false whenever myArticleId changes
         if (foundArticle !== undefined &&
@@ -101,10 +110,14 @@ function SearchResults(props) {
                         { articleLoaded && myArticle.headline ?
                             <>
                                 <Heading size='sm' paddingTop='10px'>{myArticle.headline.main}</Heading>
+                                <Text className="date">Pub Date: {articleYear} {monthDict[articleMonth]} {articleDay}</Text>
                                 <Text className="byline">{myArticle.byline.original}</Text>
                                 <br></br>
-                                {myArticle.multimedia.length > 4 ? (<Image src={myArticleImageUrl}></Image>) : (<Text>No media.</Text>)}
+                                {myArticle.multimedia.length > 4 ? (<Image className="article-image" src={myArticleImageUrl}></Image>) : (<Text>No media.</Text>)}
                                 <Text>{myArticle.abstract}</Text>
+                                <br></br>
+                                <Text>{myArticle.lead_paragraph}</Text>
+                                <br></br>
                                 <Text>News Desk: {myArticle.news_desk}</Text>
                                 <Link textDecoration="underline" href={myArticle.web_url} target="_blank" isExternal>Original Article</Link>
                             </>

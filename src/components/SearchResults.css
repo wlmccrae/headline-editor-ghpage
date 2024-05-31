@@ -6,3 +6,7 @@
     font-style: italic;
 }
 
+.article-image {
+    float: left;
+    margin: 5px;
+}
