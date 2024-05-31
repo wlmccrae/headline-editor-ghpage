@@ -6,7 +6,8 @@ import {
     Stack,
     Input, InputGroup, InputLeftAddon,
     Button, Divider,
-    Card, CardHeader, CardBody, CardFooter } from '@chakra-ui/react'
+    Card, CardHeader, CardBody, CardFooter,
+    Alert, AlertIcon } from '@chakra-ui/react'
 import './MainPage.css';
 
 function MainPage() {
@@ -18,6 +19,10 @@ function MainPage() {
         year: 0,
     });
     const [formDate, setFormDate] = useState({month: 0, year: 0,});
+    const [yearError, setYearError] = useState(false);
+    const [yearErrorMessage, setYearErrorMessage] = useState("");
+    const [monthError, setMonthError] = useState(false);
+    const [monthErrorMessage, setMonthErrorMessage] = useState('');
 
     const API_KEY = process.env.REACT_APP_NYT_API_KEY;
 
@@ -33,6 +38,10 @@ function MainPage() {
     const resetPage = async(event) => {
         event.preventDefault();
         setResultsLoaded(false);
+        setYearError(false);
+        setYearErrorMessage("");
+        setMonthError(false);
+        setMonthErrorMessage('');
     };
 
     // Handle the search button.
@@ -41,16 +50,31 @@ function MainPage() {
         event.preventDefault();
         setFormDate(archiveFormData);
 
-        const archiveResponse = await fetch(archiveURL);
-        if (archiveResponse.ok) {
-            const archiveData = await archiveResponse.json();
-            // console.log(`***** Archive Data ==> ${JSON.stringify(archiveData)}`);
-            setCopyright(archiveData.copyright);
-            setResultsLoaded(true);
-            setarticleList(archiveData.response.docs);
+        const currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth();
+        currentMonth++;  // Increase by one, as the Date objects has Jan = 0.
+        if (archiveFormData.year < 1851 || archiveFormData.year > currentYear) {
+            setYearError(true);
+            setYearErrorMessage(`Enter a year between 1851 and ${currentYear}.`);
+        } else if (archiveFormData.month > currentMonth || !Number.isInteger(archiveFormData.month)) {
+            setMonthError(true);
+            setMonthErrorMessage(`Enter a month between 1 and ${currentMonth}.`);
         } else {
-            window.confirm("There was a problem fetching the NY Times archive.")
-        }
+            const archiveResponse = await fetch(archiveURL);
+            if (archiveResponse.ok) {
+                const archiveData = await archiveResponse.json();
+                // console.log(`***** Archive Data ==> ${JSON.stringify(archiveData)}`);
+                setCopyright(archiveData.copyright);
+                setResultsLoaded(true);
+                setarticleList(archiveData.response.docs);
+                setYearErrorMessage("");
+                setYearError(false);
+                setMonthError(false);
+                setMonthErrorMessage('');
+            } else {
+                window.confirm("There was a problem fetching the NY Times archive.")
+            };
+        };
         // console.log(`***** Copyright: ${copyright}`);
         // console.log(`***** Article Info: ${JSON.stringify(articleList)}`);
         // console.log(`***** Component Status: ${resultsLoaded}`);
@@ -97,7 +121,7 @@ function MainPage() {
                 <Center><Heading size='xl' marginBottom='10px' color="brand.100">Headline Editor</Heading></Center>
                 <Card bg="brand.200" className="search-card" width='400px' boxShadow='lg' border='1px' borderColor='gray.100'>
                     <CardHeader>
-                        <Heading size='sm' color="brand.100">Retrieve all articles for a particular month.</Heading>
+                        <Heading size='sm' color="brand.100">Retrieve all articles for any month between 1851 and now.</Heading>
                     </CardHeader>
                     <CardBody>
                         <form id='archive-form'>
@@ -120,6 +144,18 @@ function MainPage() {
                             <Button onClick={resetPage} className="button" size='sm' color="brand.100" bg="brand.300">Reset Page</Button>
                         </Stack>
                     </CardFooter>
+                    { yearError  &&
+                        <Alert status='error'>
+                            <AlertIcon />
+                            { yearErrorMessage }
+                        </Alert>
+                    }
+                    { monthError  &&
+                        <Alert status='error'>
+                            <AlertIcon />
+                            { monthErrorMessage }
+                        </Alert>
+                    }
                 </Card>
             </div>
             <div className="results">
