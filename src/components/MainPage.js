@@ -10,6 +10,15 @@ import {
     Alert, AlertIcon } from '@chakra-ui/react'
 import './MainPage.css';
 
+function organizeData(rawData) {
+    const organizedData = {};
+    // For every article in the list
+        // Check the publication date: year, month, and date.
+        // If that pub date is not in the object, add it.
+        // Else add that article's metadata to the existing pub date list.
+    return organizedData;
+};
+
 function MainPage() {
     const [copyright, setCopyright] = useState('');
     const [resultsLoaded, setResultsLoaded] = useState(false);
@@ -79,8 +88,10 @@ function MainPage() {
                 const archiveData = await archiveResponse.json();
                 // console.log(`***** Archive Data ==> ${JSON.stringify(archiveData)}`);
                 setCopyright(archiveData.copyright);
+                // Organize the results by date.
+                const organizedData = organizeData(archiveData.response.docs);
                 setResultsLoaded(true);
-                setarticleList(archiveData.response.docs);
+                setarticleList(organizedData);
                 setYearError(false);
                 setYearErrorMessage("");
                 setMonthError(false);
