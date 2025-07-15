@@ -7,7 +7,7 @@ function Footer() {
         <div className="footer">
             <Divider />
             <Text pt='5px' fontSize='sm'>
-                Web App Created by <Link textDecoration="underline" href="https://www.linkedin.com/in/wmccrae" target="_blank" isExternal>Wanda L. McCrae</Link>, Copyright 2024. Code available on <Link textDecoration="underline" href="https://github.com/wlmccrae/headline-editor" target="_blank" isExternal>GitHub</Link>.
+                Web App Created by <Link textDecoration="underline" href="https://wandamccrae.com/" target="_blank" rel= "noopener noreferrer" isExternal>Wanda L. McCrae</Link>, Copyright 2024.
             </Text>
         </div>
     )
