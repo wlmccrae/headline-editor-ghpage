@@ -1,6 +1,6 @@
 # Headline Editor - Play with NY Times Headlines from the Archives
 
-Headline Editor lets you search the NY Times archives, pick any article, and rewrite its headline. Experiment with news history, craft your own versions, and share your creative edits!
+[Headline Editor](https://wlmccrae.github.io/headline-editor-ghpage/) lets you search the NY Times archives, pick any article, and rewrite its headline. Experiment with news history, craft your own versions, and share your creative edits!
 
 Release Date: 2024 March 10
 
