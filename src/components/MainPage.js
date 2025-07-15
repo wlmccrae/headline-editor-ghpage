@@ -137,7 +137,7 @@ function MainPage() {
                 <Center><Heading size='xl' marginBottom='10px' color="brand.100">Headline Editor</Heading></Center>
                 <Card bg="brand.200" className="search-card" width='400px' boxShadow='lg' border='1px' borderColor='gray.100'>
                     <CardHeader>
-                        <Heading size='sm' color="brand.100">Retrieve all articles for any month between 1851 and now.</Heading>
+                        <Heading size='sm' color="brand.100">Retrieve all articles for any month between 1851 and now. If the current year/month does not work&mdash;recent content can be restricted&mdash;try earlier dates.</Heading>
                     </CardHeader>
                     <CardBody>
                         <form id='archive-form'>
