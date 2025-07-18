@@ -132,9 +132,10 @@ function MainPage() {
     );
 
     return (
-        <div className="content">
+        <div className="content" role="main">
             <div className="searches">
-                <Center><Heading size='xl' marginBottom='10px' color="brand.100">Headline Editor</Heading></Center>
+                <Center><Heading size='xl' color="brand.100">Headline Editor</Heading></Center>
+                <Center><Heading size='l' marginBottom='10px' color="brand.100">Play with NY Times Headlines from the Archives</Heading></Center>
                 <Card bg="brand.200" className="search-card" width='400px' boxShadow='lg' border='1px' borderColor='gray.100'>
                     <CardHeader>
                         <Heading size='sm' color="brand.100">Retrieve all articles for any month between 1851 and now. If the current year/month does not work&mdash;recent content can be restricted&mdash;try earlier dates.</Heading>
@@ -156,31 +157,31 @@ function MainPage() {
                     <Divider color="brand.200" />
                     <CardFooter>
                         <Stack spacing={2} direction='row' align='center'>
-                            <Button onClick={fetchArchive} className="button" size='sm' color="brand.300" bg="brand.100">Search</Button>
-                            <Button onClick={resetPage} className="button" size='sm' color="brand.100" bg="brand.300">Reset Page</Button>
+                            <Button type="button" onClick={fetchArchive} className="button" size='sm' color="brand.300" bg="brand.100">Search</Button>
+                            <Button type="button" onClick={resetPage} className="button" size='sm' color="brand.100" bg="brand.300">Reset Page</Button>
                         </Stack>
                     </CardFooter>
                     { yearError  &&
-                        <Alert status='error'>
+                        <Alert aria-atomic="true" status='error'>
                             <AlertIcon />
                             { yearErrorMessage }
                         </Alert>
                     }
                     { monthError  &&
-                        <Alert status='error'>
+                        <Alert aria-atomic="true" status='error'>
                             <AlertIcon />
                             { monthErrorMessage }
                         </Alert>
                     }
                     { formatError &&
-                        <Alert status='error'>
+                        <Alert aria-atomic="true" status='error'>
                             <AlertIcon />
                             { formatErrorMessage }
                         </Alert>
                     }
                 </Card>
             </div>
-            <div className="results">
+            <div className="results" aria-live="polite">
                 {resultsLoaded ? <SearchResults formData={formDate} articleData={articleList} copyright={copyright} /> : freshLanding()}
             </div>
         </div>

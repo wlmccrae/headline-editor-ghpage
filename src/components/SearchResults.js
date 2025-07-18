@@ -102,11 +102,11 @@ function SearchResults(props) {
                         { articleLoaded && myArticle.headline &&
                             <VStack spacing='5px' paddingTop='20px' paddingRight='10px' justifyContent='left'>
                                 <Input onChange={editHeadline} type="text" id="editheadline" name="editheadline" placeholder="Edit the headline" />
-                                <Button onClick={handleEdit} size='sm' className='button' color="brand.300" bg="brand.100">Edit</Button>
+                                <Button type="button" onClick={handleEdit} size='sm' className='button' color="brand.300" bg="brand.100">Edit</Button>
                             </VStack>
                         }
                     </Box>
-                    <Box className='article-display' width='60%' paddingLeft='15px' bg="brand.200" color="brand.100">
+                    <Box aria-live="polite" className='article-display' width='60%' paddingLeft='15px' bg="brand.200" color="brand.100">
                         { articleLoaded && myArticle.headline ?
                             <>
                                 <Heading size='sm' paddingTop='10px'>{myArticle.headline.main}</Heading>
