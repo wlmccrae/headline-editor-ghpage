@@ -10,3 +10,16 @@
     float: left;
     margin: 5px;
 }
+
+@media (max-width: 767px) {
+    .search-results {
+        padding-left: 0;
+    }
+
+    .article-image {
+        float: none;
+        display: block;
+        margin: 10px 0;
+        max-width: 100%;
+    }
+}

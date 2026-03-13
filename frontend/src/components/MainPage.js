@@ -26,6 +26,7 @@ function MainPage() {
     const [formatError, setFormatError] = useState(false);
     const [formatErrorMessage, setFormatErrorMessage] = useState('');
     const [fetchError, setFetchError] = useState(false);
+    const [isSearching, setIsSearching] = useState(false);
 
     const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 
@@ -41,6 +42,7 @@ function MainPage() {
     const resetPage = async(event) => {
         event.preventDefault();
         setResultsLoaded(false);
+        setIsSearching(false);
         setYearError(false);
         setYearErrorMessage("");
         setMonthError(false);
@@ -55,6 +57,7 @@ function MainPage() {
         const archiveURL = `${BACKEND_URL}/nyt?year=${archiveFormData.year}&month=${archiveFormData.month}`;
         event.preventDefault();
         setResultsLoaded(false);
+        setIsSearching(false);
         setFormDate(archiveFormData);
 
         const currentYear = new Date().getFullYear();
@@ -82,7 +85,9 @@ function MainPage() {
             setMonthError(true);
             setMonthErrorMessage(`Enter a month between 1 and ${currentMonth}.`);
         } else {
+            setIsSearching(true);
             const archiveResponse = await fetch(archiveURL);
+            setIsSearching(false);
             if (archiveResponse.ok) {
                 const archiveData = await archiveResponse.json();
                 // console.log(`***** Archive Data ==> ${JSON.stringify(archiveData)}`);
@@ -136,7 +141,7 @@ function MainPage() {
 
     const freshLanding = () => (
         <div className="initialdisplay">
-            <p>No results yet.</p>
+            <Heading as='h2' size='md' color="brand.100">No results yet...</Heading>
         </div>
     );
 
@@ -145,7 +150,7 @@ function MainPage() {
             <div className="searches">
                 <Center><Heading as='h1' size='xl' color="brand.100">Headline Editor</Heading></Center>
                 <Center><Text fontSize='xl' marginBottom='10px' color="brand.100" textAlign='center'>Play with NY Times Headlines from the Archives</Text></Center>
-                <Card bg="brand.200" className="search-card" width='400px' boxShadow='lg' border='1px' borderColor='gray.100'>
+                <Card bg="brand.200" className="search-card" width={['95%', '400px']} maxWidth='400px' boxShadow='lg' border='1px' borderColor='gray.100'>
                     <CardHeader>
                         <Text color="brand.100">Retrieve all articles for any month between 1851 and now. If the current year/month does not work&mdash;recent content can be restricted&mdash;try earlier dates.</Text>
                     </CardHeader>
@@ -197,7 +202,7 @@ function MainPage() {
                 </Card>
             </div>
             <div className="results" aria-live="polite">
-                {resultsLoaded ? <SearchResults formData={formDate} articleData={articleList} copyright={copyright} /> : freshLanding()}
+                {resultsLoaded ? <SearchResults formData={formDate} articleData={articleList} copyright={copyright} /> : isSearching ? <div className="initialdisplay"><Heading as='h2' size='md' color="brand.100">Searching...</Heading></div> : freshLanding()}
             </div>
         </main>
 
