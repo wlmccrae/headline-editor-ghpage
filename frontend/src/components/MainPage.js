@@ -139,12 +139,6 @@ function MainPage() {
     //     }
     // };
 
-    const freshLanding = () => (
-        <div className="initialdisplay">
-            <Heading as='h2' size='md' color="brand.100">No results yet...</Heading>
-        </div>
-    );
-
     return (
         <main id="main-content" className="content">
             <div className="searches">
@@ -158,12 +152,12 @@ function MainPage() {
                         <form id='archive-form' aria-label="Search NY Times archive">
                             <Stack spacing={1}>
                                 <InputGroup>
-                                    <InputLeftAddon w='120px' color="brand.100" aria-hidden="true">Year (YYYY)</InputLeftAddon>
-                                    <Input onChange={handleChange} type="text" id="year" name="year" placeholder="2024" variant='outline' width='100px' bg="brand.300" aria-label="Year, 4 digits (YYYY)"/>
+                                    <InputLeftAddon w='140px' color="brand.100" aria-hidden="true">Year (YYYY)</InputLeftAddon>
+                                    <Input onChange={handleChange} type="text" id="year" name="year" placeholder="2024" variant='outline' w='100px' bg="brand.300" aria-label="Year, 4 digits (YYYY)"/>
                                 </InputGroup>
                                 <InputGroup>
-                                    <InputLeftAddon w='120px' color="brand.100" aria-hidden="true">Month (M)</InputLeftAddon>
-                                    <Input onChange={handleChange} type="text" id="month" name="month" placeholder="5" variant='outline' width='100px' bg="brand.300" aria-label="Month, number 1 to 12"/>
+                                    <InputLeftAddon w='140px' color="brand.100" aria-hidden="true">Month (M)</InputLeftAddon>
+                                    <Input onChange={handleChange} type="text" id="month" name="month" placeholder="5" variant='outline' w='100px' bg="brand.300" aria-label="Month, number 1 to 12"/>
                                 </InputGroup>
                             </Stack>
                         </form>
@@ -202,7 +196,7 @@ function MainPage() {
                 </Card>
             </div>
             <div className="results" aria-live="polite">
-                {resultsLoaded ? <SearchResults formData={formDate} articleData={articleList} copyright={copyright} /> : isSearching ? <div className="initialdisplay"><Heading as='h2' size='md' color="brand.100">Searching...</Heading></div> : freshLanding()}
+                {resultsLoaded ? <SearchResults formData={formDate} articleData={articleList} copyright={copyright} /> : isSearching ? <div className="initialdisplay"><Heading as='h2' size='md' color="brand.100">Searching...</Heading></div> : null}
             </div>
         </main>
 

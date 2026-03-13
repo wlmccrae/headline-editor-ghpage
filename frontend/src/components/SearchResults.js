@@ -99,7 +99,7 @@ function SearchResults(props) {
                     <Box className="article-list" width={['100%', '100%', '38%']} borderRight={['none', 'none', '1px']} borderBottom={['1px', '1px', 'none']} borderColor='brand.200' paddingBottom={['20px', '20px', '0']}>
                         <Heading as='h2' pt='30px' pb='10px' size='md' color="brand.100">NY Times Archive for { props.formData.year } { monthDict[props.formData.month] }</Heading>
                         <form id="select-article" aria-label="Select an article">
-                            <Select value={myArticle._id} onChange={handleChange} placeholder='Click to Select Article' size='sm' variant='filled' width={['100%', '80%', '50%']} paddingBottom='10px' color="brand.100" aria-label="Select an article to view">
+                            <Select value={myArticle._id} onChange={handleChange} placeholder='Click to Select Article' size='sm' variant='filled' width={['100%', '90%', '80%']} paddingBottom='10px' color="brand.100" aria-label="Select an article to view">
                                 {props.articleData.map(article => {
                                     return (
                                         <option key={article._id} value={article._id}>
