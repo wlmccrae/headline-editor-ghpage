@@ -95,11 +95,11 @@ function SearchResults(props) {
         <div>
             <Divider marginTop='20px'/>
             <div className="search-results">
-                <Flex height='auto'>
-                    <Box className="article-list" width='38%' borderRight='1px' borderColor='brand.200'>
+                <Flex height='auto' direction={['column', 'column', 'row']}>
+                    <Box className="article-list" width={['100%', '100%', '38%']} borderRight={['none', 'none', '1px']} borderBottom={['1px', '1px', 'none']} borderColor='brand.200' paddingBottom={['20px', '20px', '0']}>
                         <Heading as='h2' pt='30px' pb='10px' size='md' color="brand.100">NY Times Archive for { props.formData.year } { monthDict[props.formData.month] }</Heading>
                         <form id="select-article" aria-label="Select an article">
-                            <Select value={myArticle._id} onChange={handleChange} placeholder='Click to Select Article' size='sm' variant='filled' width='50%' paddingBottom='10px' color="brand.100" aria-label="Select an article to view">
+                            <Select value={myArticle._id} onChange={handleChange} placeholder='Click to Select Article' size='sm' variant='filled' width={['100%', '90%', '80%']} paddingBottom='10px' color="brand.100" aria-label="Select an article to view">
                                 {props.articleData.map(article => {
                                     return (
                                         <option key={article._id} value={article._id}>
@@ -116,7 +116,7 @@ function SearchResults(props) {
                             </VStack>
                         }
                     </Box>
-                    <Box aria-live="polite" role="region" aria-label="Article details" className='article-display' width='60%' paddingLeft='15px' bg="brand.200" color="brand.100">
+                    <Box aria-live="polite" role="region" aria-label="Article details" className='article-display' width={['100%', '100%', '60%']} paddingLeft={['0', '0', '15px']} paddingTop={['15px', '15px', '0']} bg="brand.200" color="brand.100">
                         { articleLoaded && myArticle.headline ?
                             <>
                                 <Heading as='h3' size='sm' paddingTop='10px'>{myArticle.headline.main}</Heading>
