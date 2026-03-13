@@ -1,0 +1,20 @@
+# Environment
+.env
+
+# macOS
+.DS_Store
+
+# Frontend
+frontend/node_modules/
+frontend/build/
+
+# Backend
+backend/venv/
+backend/__pycache__/
+backend/routers/__pycache__/
+**/*.pyc
+**/*.pyo
+
+# Root (legacy gh-pages tooling)
+node_modules/
+build/

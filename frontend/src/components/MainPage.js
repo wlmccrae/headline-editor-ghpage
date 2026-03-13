@@ -5,7 +5,7 @@ import {
     Center,
     Stack,
     Input, InputGroup, InputLeftAddon,
-    Button, Divider,
+    Button, Divider, Text,
     Card, CardHeader, CardBody, CardFooter,
     Alert, AlertIcon } from '@chakra-ui/react'
 import './MainPage.css';
@@ -34,8 +34,9 @@ function MainPage() {
     const [monthErrorMessage, setMonthErrorMessage] = useState('');
     const [formatError, setFormatError] = useState(false);
     const [formatErrorMessage, setFormatErrorMessage] = useState('');
+    const [fetchError, setFetchError] = useState(false);
 
-    const API_KEY = process.env.REACT_APP_NYT_API_KEY;
+    const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 
     // Handle when the form changes
     const handleChange = (event) => {
@@ -55,11 +56,12 @@ function MainPage() {
         setMonthErrorMessage('');
         setFormatError(false);
         setFormatErrorMessage('');
+        setFetchError(false);
     };
 
     // Handle the search button.
     const fetchArchive = async (event) => {
-        const archiveURL = `https://corsproxy.io/?https://api.nytimes.com/svc/archive/v1/${archiveFormData.year}/${archiveFormData.month}.json?api-key=${API_KEY}`;
+        const archiveURL = `${BACKEND_URL}/nyt?year=${archiveFormData.year}&month=${archiveFormData.month}`;
         event.preventDefault();
         setResultsLoaded(false);
         setFormDate(archiveFormData);
@@ -67,13 +69,19 @@ function MainPage() {
         const currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
         currentMonth++;  // Increase by one, as the Date object has Jan = 0.
-        const formMonth = parseInt(archiveFormData.month);
-        const formYear = parseInt(archiveFormData.year);
+        const yearRegex = /^\d{4}$/;
+        const monthRegex = /^\d{1,2}$/;
 
-        if (!Number.isInteger(formYear) || !Number.isInteger(formMonth)) {
+        if (!yearRegex.test(archiveFormData.year) || !monthRegex.test(archiveFormData.month)) {
             setFormatError(true);
             setFormatErrorMessage('Enter the year as 4 digits (YYYY) and the month as a number between 1 and 12');
-        } else if (formYear < 1851 || formYear > currentYear) {
+            return;
+        }
+
+        const formYear = parseInt(archiveFormData.year, 10);
+        const formMonth = parseInt(archiveFormData.month, 10);
+
+        if (formYear < 1851 || formYear > currentYear) {
             setYearError(true);
             setYearErrorMessage(`Enter a year between 1851 and ${currentYear}.`);
         } else if ((formYear < currentYear) && (formMonth > 12)) {
@@ -98,8 +106,9 @@ function MainPage() {
                 setMonthErrorMessage('');
                 setFormatError(false);
                 setFormatErrorMessage('');
+                setFetchError(false);
             } else {
-                window.confirm("There was a problem fetching the NY Times archive.")
+                setFetchError(true);
             };
         };
         // console.log(`***** Copyright: ${copyright}`);
@@ -138,28 +147,29 @@ function MainPage() {
 
     const freshLanding = () => (
         <div className="initialdisplay">
-            <h2>No results yet.</h2>
+            <p>No results yet.</p>
         </div>
     );
 
     return (
-        <div className="content">
+        <main id="main-content" className="content">
             <div className="searches">
-                <Center><Heading size='xl' marginBottom='10px' color="brand.100">Headline Editor</Heading></Center>
+                <Center><Heading as='h1' size='xl' color="brand.100">Headline Editor</Heading></Center>
+                <Center><Text fontSize='xl' marginBottom='10px' color="brand.100" textAlign='center'>Play with NY Times Headlines from the Archives</Text></Center>
                 <Card bg="brand.200" className="search-card" width='400px' boxShadow='lg' border='1px' borderColor='gray.100'>
                     <CardHeader>
-                        <Heading size='sm' color="brand.100">Retrieve all articles for any month between 1851 and now.</Heading>
+                        <Text color="brand.100">Retrieve all articles for any month between 1851 and now. If the current year/month does not work&mdash;recent content can be restricted&mdash;try earlier dates.</Text>
                     </CardHeader>
                     <CardBody>
-                        <form id='archive-form'>
+                        <form id='archive-form' aria-label="Search NY Times archive">
                             <Stack spacing={1}>
                                 <InputGroup>
-                                    <InputLeftAddon w='120px' color="brand.100">Year (YYYY)</InputLeftAddon>
-                                    <Input onChange={handleChange} type="text" id="year" name="year" placeholder="2024" variant='outline' width='100px' bg="brand.300"/>
+                                    <InputLeftAddon w='120px' color="brand.100" aria-hidden="true">Year (YYYY)</InputLeftAddon>
+                                    <Input onChange={handleChange} type="text" id="year" name="year" placeholder="2024" variant='outline' width='100px' bg="brand.300" aria-label="Year, 4 digits (YYYY)"/>
                                 </InputGroup>
                                 <InputGroup>
-                                    <InputLeftAddon w='120px' color="brand.100">Month (M)</InputLeftAddon>
-                                    <Input onChange={handleChange} type="text" id="month" name="month" placeholder="5" variant='outline' width='100px' bg="brand.300"/>
+                                    <InputLeftAddon w='120px' color="brand.100" aria-hidden="true">Month (M)</InputLeftAddon>
+                                    <Input onChange={handleChange} type="text" id="month" name="month" placeholder="5" variant='outline' width='100px' bg="brand.300" aria-label="Month, number 1 to 12"/>
                                 </InputGroup>
                             </Stack>
                         </form>
@@ -167,34 +177,40 @@ function MainPage() {
                     <Divider color="brand.200" />
                     <CardFooter>
                         <Stack spacing={2} direction='row' align='center'>
-                            <Button onClick={fetchArchive} className="button" size='sm' color="brand.300" bg="brand.100">Search</Button>
-                            <Button onClick={resetPage} className="button" size='sm' color="brand.100" bg="brand.300">Reset Page</Button>
+                            <Button type="button" onClick={fetchArchive} className="button" size='sm' color="brand.300" bg="brand.100">Search</Button>
+                            <Button type="button" onClick={resetPage} className="button" size='sm' color="brand.100" bg="brand.300">Reset Page</Button>
                         </Stack>
                     </CardFooter>
                     { yearError  &&
-                        <Alert status='error'>
+                        <Alert aria-atomic="true" status='error'>
                             <AlertIcon />
                             { yearErrorMessage }
                         </Alert>
                     }
                     { monthError  &&
-                        <Alert status='error'>
+                        <Alert aria-atomic="true" status='error'>
                             <AlertIcon />
                             { monthErrorMessage }
                         </Alert>
                     }
                     { formatError &&
-                        <Alert status='error'>
+                        <Alert aria-atomic="true" status='error'>
                             <AlertIcon />
                             { formatErrorMessage }
                         </Alert>
                     }
+                    { fetchError &&
+                        <Alert aria-atomic="true" status='error'>
+                            <AlertIcon />
+                            There was a problem fetching the NY Times archive.
+                        </Alert>
+                    }
                 </Card>
             </div>
-            <div className="results">
+            <div className="results" aria-live="polite">
                 {resultsLoaded ? <SearchResults formData={formDate} articleData={articleList} copyright={copyright} /> : freshLanding()}
             </div>
-        </div>
+        </main>
 
     );
 

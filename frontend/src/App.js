@@ -3,6 +3,7 @@ import MainPage from './components/MainPage';
 import Footer from './components/Footer';
 import './App.css';
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
+import { DyslexiaProvider } from './DyslexiaContext';
 
 function App() {
   const theme = extendTheme({
@@ -16,12 +17,15 @@ function App() {
   })
 
   return (
-    <ChakraProvider theme={theme}>
-      <BrowserRouter>
-        <MainPage />
-        <Footer />
-      </BrowserRouter>
-    </ChakraProvider>
+    <DyslexiaProvider>
+      <ChakraProvider theme={theme}>
+        <BrowserRouter>
+          <a href="#main-content" className="skip-link">Skip to main content</a>
+          <MainPage />
+          <Footer />
+        </BrowserRouter>
+      </ChakraProvider>
+    </DyslexiaProvider>
   );
 }
 
