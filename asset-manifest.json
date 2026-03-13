@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/headline-editor-ghpage/static/css/main.2adf096a.css",
-    "main.js": "/headline-editor-ghpage/static/js/main.b8f02a3c.js",
+    "main.css": "/headline-editor-ghpage/static/css/main.4dd1b7a4.css",
+    "main.js": "/headline-editor-ghpage/static/js/main.e7d1d0bf.js",
     "static/js/453.43874e25.chunk.js": "/headline-editor-ghpage/static/js/453.43874e25.chunk.js",
     "index.html": "/headline-editor-ghpage/index.html",
-    "main.2adf096a.css.map": "/headline-editor-ghpage/static/css/main.2adf096a.css.map",
-    "main.b8f02a3c.js.map": "/headline-editor-ghpage/static/js/main.b8f02a3c.js.map",
+    "main.4dd1b7a4.css.map": "/headline-editor-ghpage/static/css/main.4dd1b7a4.css.map",
+    "main.e7d1d0bf.js.map": "/headline-editor-ghpage/static/js/main.e7d1d0bf.js.map",
     "453.43874e25.chunk.js.map": "/headline-editor-ghpage/static/js/453.43874e25.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.2adf096a.css",
-    "static/js/main.b8f02a3c.js"
+    "static/css/main.4dd1b7a4.css",
+    "static/js/main.e7d1d0bf.js"
   ]
 }
