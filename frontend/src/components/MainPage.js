@@ -5,7 +5,7 @@ import {
     Center,
     Stack,
     Input, InputGroup, InputLeftAddon,
-    Button, Divider,
+    Button, Divider, Text,
     Card, CardHeader, CardBody, CardFooter,
     Alert, AlertIcon } from '@chakra-ui/react'
 import './MainPage.css';
@@ -136,29 +136,29 @@ function MainPage() {
 
     const freshLanding = () => (
         <div className="initialdisplay">
-            <h2>No results yet.</h2>
+            <p>No results yet.</p>
         </div>
     );
 
     return (
-        <div className="content" role="main">
+        <main id="main-content" className="content">
             <div className="searches">
-                <Center><Heading size='xl' color="brand.100">Headline Editor</Heading></Center>
-                <Center><Heading size='l' marginBottom='10px' color="brand.100">Play with NY Times Headlines from the Archives</Heading></Center>
+                <Center><Heading as='h1' size='xl' color="brand.100">Headline Editor</Heading></Center>
+                <Center><Text fontSize='xl' marginBottom='10px' color="brand.100" textAlign='center'>Play with NY Times Headlines from the Archives</Text></Center>
                 <Card bg="brand.200" className="search-card" width='400px' boxShadow='lg' border='1px' borderColor='gray.100'>
                     <CardHeader>
-                        <Heading size='sm' color="brand.100">Retrieve all articles for any month between 1851 and now. If the current year/month does not work&mdash;recent content can be restricted&mdash;try earlier dates.</Heading>
+                        <Text color="brand.100">Retrieve all articles for any month between 1851 and now. If the current year/month does not work&mdash;recent content can be restricted&mdash;try earlier dates.</Text>
                     </CardHeader>
                     <CardBody>
-                        <form id='archive-form'>
+                        <form id='archive-form' aria-label="Search NY Times archive">
                             <Stack spacing={1}>
                                 <InputGroup>
-                                    <InputLeftAddon w='120px' color="brand.100">Year (YYYY)</InputLeftAddon>
-                                    <Input onChange={handleChange} type="text" id="year" name="year" placeholder="2024" variant='outline' width='100px' bg="brand.300"/>
+                                    <InputLeftAddon w='120px' color="brand.100" aria-hidden="true">Year (YYYY)</InputLeftAddon>
+                                    <Input onChange={handleChange} type="text" id="year" name="year" placeholder="2024" variant='outline' width='100px' bg="brand.300" aria-label="Year, 4 digits (YYYY)"/>
                                 </InputGroup>
                                 <InputGroup>
-                                    <InputLeftAddon w='120px' color="brand.100">Month (M)</InputLeftAddon>
-                                    <Input onChange={handleChange} type="text" id="month" name="month" placeholder="5" variant='outline' width='100px' bg="brand.300"/>
+                                    <InputLeftAddon w='120px' color="brand.100" aria-hidden="true">Month (M)</InputLeftAddon>
+                                    <Input onChange={handleChange} type="text" id="month" name="month" placeholder="5" variant='outline' width='100px' bg="brand.300" aria-label="Month, number 1 to 12"/>
                                 </InputGroup>
                             </Stack>
                         </form>
@@ -199,7 +199,7 @@ function MainPage() {
             <div className="results" aria-live="polite">
                 {resultsLoaded ? <SearchResults formData={formDate} articleData={articleList} copyright={copyright} /> : freshLanding()}
             </div>
-        </div>
+        </main>
 
     );
 

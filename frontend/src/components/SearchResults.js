@@ -96,10 +96,10 @@ function SearchResults(props) {
             <Divider marginTop='20px'/>
             <div className="search-results">
                 <Flex height='auto'>
-                    <Box className="article-list"width='38%' borderRight='1px' borderColor='brand.200'>
-                        <Heading pt='30px' pb='10px' size='md' color="brand.100">NY Times Archive for { props.formData.year } { monthDict[props.formData.month] }</Heading>
-                        <form id="select-article">
-                            <Select value={myArticle._id} onChange={handleChange} placeholder='Click to Select Article' size='sm' variant='filled' width='50%' paddingBottom='10px' color="brand.100">
+                    <Box className="article-list" width='38%' borderRight='1px' borderColor='brand.200'>
+                        <Heading as='h2' pt='30px' pb='10px' size='md' color="brand.100">NY Times Archive for { props.formData.year } { monthDict[props.formData.month] }</Heading>
+                        <form id="select-article" aria-label="Select an article">
+                            <Select value={myArticle._id} onChange={handleChange} placeholder='Click to Select Article' size='sm' variant='filled' width='50%' paddingBottom='10px' color="brand.100" aria-label="Select an article to view">
                                 {props.articleData.map(article => {
                                     return (
                                         <option key={article._id} value={article._id}>
@@ -111,26 +111,26 @@ function SearchResults(props) {
                         </form>
                         { articleLoaded && myArticle.headline &&
                             <VStack spacing='5px' paddingTop='20px' paddingRight='10px' justifyContent='left'>
-                                <Input onChange={editHeadline} type="text" id="editheadline" name="editheadline" placeholder="Edit the headline" />
-                                <Button type="button" onClick={handleEdit} size='sm' className='button' color="brand.300" bg="brand.100">Edit</Button>
+                                <Input onChange={editHeadline} type="text" id="editheadline" name="editheadline" placeholder="Edit the headline" aria-label="Edit the headline" />
+                                <Button type="button" onClick={handleEdit} size='sm' className='button' color="brand.300" bg="brand.100" aria-label="Apply headline edit">Edit</Button>
                             </VStack>
                         }
                     </Box>
-                    <Box aria-live="polite" className='article-display' width='60%' paddingLeft='15px' bg="brand.200" color="brand.100">
+                    <Box aria-live="polite" role="region" aria-label="Article details" className='article-display' width='60%' paddingLeft='15px' bg="brand.200" color="brand.100">
                         { articleLoaded && myArticle.headline ?
                             <>
-                                <Heading size='sm' paddingTop='10px'>{myArticle.headline.main}</Heading>
-                                <Text className="date">Pub Date: {articleYear} {monthDict[articleMonth]} {articleDay}</Text>
+                                <Heading as='h3' size='sm' paddingTop='10px'>{myArticle.headline.main}</Heading>
+                                <Text className="date">Publication date: {articleYear} {monthDict[articleMonth]} {articleDay}</Text>
                                 <Text className="byline">{myArticle.byline.original}</Text>
-                                <br></br>
-                                {myArticle.multimedia.length > 4 ? (<Image className="article-image" src={myArticleImageUrl}></Image>) : (<Text>No media.</Text>)}
+                                {myArticle.multimedia.length > 4
+                                    ? <Image className="article-image" src={myArticleImageUrl} alt={`Photo for article: ${myArticle.headline.main}`} marginTop='10px' marginBottom='10px' />
+                                    : <Text marginTop='10px'>No media.</Text>
+                                }
                                 <Text>{myArticle.abstract}</Text>
-                                <br></br>
-                                <Text>{myArticle.lead_paragraph}</Text>
-                                <br></br>
-                                <Text>News Desk: {myArticle.news_desk}</Text>
+                                <Text marginTop='10px'>{myArticle.lead_paragraph}</Text>
+                                <Text marginTop='10px'>News Desk: {myArticle.news_desk}</Text>
                                 {sanitizeNytUrl(myArticle.web_url) && (
-                                    <Link textDecoration="underline" href={sanitizeNytUrl(myArticle.web_url)} target="_blank" isExternal>Original Article</Link>
+                                    <Link textDecoration="underline" href={sanitizeNytUrl(myArticle.web_url)} target="_blank" isExternal aria-label="Read the original article on NY Times website, opens in new tab">Original Article</Link>
                                 )}
                             </>
                         : <Text paddingTop='10px'>Please select an article.</Text>}
