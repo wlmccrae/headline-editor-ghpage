@@ -25,6 +25,7 @@ function MainPage() {
     const [monthErrorMessage, setMonthErrorMessage] = useState('');
     const [formatError, setFormatError] = useState(false);
     const [formatErrorMessage, setFormatErrorMessage] = useState('');
+    const [fetchError, setFetchError] = useState(false);
 
     const API_KEY = process.env.REACT_APP_NYT_API_KEY;
 
@@ -46,6 +47,7 @@ function MainPage() {
         setMonthErrorMessage('');
         setFormatError(false);
         setFormatErrorMessage('');
+        setFetchError(false);
     };
 
     // Handle the search button.
@@ -58,13 +60,19 @@ function MainPage() {
         const currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
         currentMonth++;  // Increase by one, as the Date object has Jan = 0.
-        const formMonth = parseInt(archiveFormData.month);
-        const formYear = parseInt(archiveFormData.year);
+        const yearRegex = /^\d{4}$/;
+        const monthRegex = /^\d{1,2}$/;
 
-        if (!Number.isInteger(formYear) || !Number.isInteger(formMonth)) {
+        if (!yearRegex.test(archiveFormData.year) || !monthRegex.test(archiveFormData.month)) {
             setFormatError(true);
             setFormatErrorMessage('Enter the year as 4 digits (YYYY) and the month as a number between 1 and 12');
-        } else if (formYear < 1851 || formYear > currentYear) {
+            return;
+        }
+
+        const formYear = parseInt(archiveFormData.year, 10);
+        const formMonth = parseInt(archiveFormData.month, 10);
+
+        if (formYear < 1851 || formYear > currentYear) {
             setYearError(true);
             setYearErrorMessage(`Enter a year between 1851 and ${currentYear}.`);
         } else if ((formYear < currentYear) && (formMonth > 12)) {
@@ -87,8 +95,9 @@ function MainPage() {
                 setMonthErrorMessage('');
                 setFormatError(false);
                 setFormatErrorMessage('');
+                setFetchError(false);
             } else {
-                window.confirm("There was a problem fetching the NY Times archive.")
+                setFetchError(true);
             };
         };
         // console.log(`***** Copyright: ${copyright}`);
@@ -177,6 +186,12 @@ function MainPage() {
                         <Alert aria-atomic="true" status='error'>
                             <AlertIcon />
                             { formatErrorMessage }
+                        </Alert>
+                    }
+                    { fetchError &&
+                        <Alert aria-atomic="true" status='error'>
+                            <AlertIcon />
+                            There was a problem fetching the NY Times archive.
                         </Alert>
                     }
                 </Card>

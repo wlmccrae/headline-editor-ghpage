@@ -57,6 +57,16 @@ function SearchResults(props) {
         });
     };
 
+    const sanitizeNytUrl = (url) => {
+        try {
+            const parsed = new URL(url);
+            if (parsed.hostname === 'www.nytimes.com' || parsed.hostname === 'nytimes.com') {
+                return url;
+            }
+        } catch {}
+        return null;
+    };
+
     useEffect(() => {
         // Load that article's data when myArticleId changes.
         const foundArticle = props.articleData.find(article => article._id === myArticleId);
@@ -71,8 +81,8 @@ function SearchResults(props) {
         if (foundArticle !== undefined &&
             foundArticle.multimedia !== undefined &&
             foundArticle.multimedia[4] !== undefined) {
-            const imageUrl = `https://nytimes.com/${foundArticle.multimedia[4].url}`;
-            setMyArticleImageUrl(imageUrl);
+            const rawUrl = `https://nytimes.com/${foundArticle.multimedia[4].url}`;
+            setMyArticleImageUrl(sanitizeNytUrl(rawUrl) || '');
         }
     }, [myArticleId, props.articleData]);
 
@@ -119,7 +129,9 @@ function SearchResults(props) {
                                 <Text>{myArticle.lead_paragraph}</Text>
                                 <br></br>
                                 <Text>News Desk: {myArticle.news_desk}</Text>
-                                <Link textDecoration="underline" href={myArticle.web_url} target="_blank" isExternal>Original Article</Link>
+                                {sanitizeNytUrl(myArticle.web_url) && (
+                                    <Link textDecoration="underline" href={sanitizeNytUrl(myArticle.web_url)} target="_blank" isExternal>Original Article</Link>
+                                )}
                             </>
                         : <Text paddingTop='10px'>Please select an article.</Text>}
                     </Box>
