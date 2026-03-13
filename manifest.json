@@ -1,8 +1,16 @@
 {
-    "short_name": "Headline Editor",
-    "name": "Headline Editor",
-    "start_url": ".",
-    "display": "standalone",
-    "theme_color": "#000000",
-    "background_color": "#ffffff"
-  }
+  "short_name": "Headline Editor",
+  "name": "Headline Editor - Play with NY Times Headlines",
+  "description": "Search the NY Times archives, pick any article, and rewrite its headline.",
+  "icons": [
+    {
+      "src": "icons8-newspaper-128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#08276b",
+  "background_color": "#ffffff"
+}
