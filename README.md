@@ -195,7 +195,7 @@ The following bugs were identified through edge-case analysis and fixed alongsid
 | [`MainPage.js`](frontend/src/components/MainPage.js) | Month `"0"` bypassed the `< 1` validation check for past years and the current year, reaching `fetch` and returning a confusing generic error instead of a month validation message | Added `formMonth < 1` to both month-validation branches |
 | [`MainPage.js`](frontend/src/components/MainPage.js) | A network exception thrown by `fetch` (e.g. offline, DNS failure) left the component stuck showing "Searching…" permanently — `setIsSearching(false)` and `setFetchError(true)` were never called | Wrapped the `fetch` call in `try/catch`; the `catch` block clears the loading state and sets the fetch error |
 | [`SearchResults.js`](frontend/src/components/SearchResults.js) | `multimedia: null` from the API response caused a `TypeError` crash in two places: the `useEffect` image-URL guard (`null[4]`) and the render check (`null.length`) | Changed guard to `multimedia != null` (covers both `null` and `undefined`); used optional chaining `multimedia?.length` in the render |
-| [`SearchResults.js`](frontend/src/components/SearchResults.js) | `multimedia[4].url` being `undefined` produced `src="https://nytimes.com/undefined"` — a silently broken image | Added `&& foundArticle.multimedia[4].url` to the image-URL guard so no URL is set when the property is missing |
+| [`SearchResults.js`](frontend/src/components/SearchResults.js) | `multimedia[4].url` being `undefined` produced `src="https://nytimes.com/undefined"` — a silently broken image; the render condition `multimedia?.length > 4` also showed an `<Image>` even when the URL was empty, and switching articles left a stale URL in state | Added `&& foundArticle.multimedia[4].url` to the `useEffect` image-URL guard; added an `else` branch to reset `myArticleImageUrl` to `''` on article change; changed the render condition from `multimedia?.length > 4` to `myArticleImageUrl` so "No media." is shown whenever no valid URL is available |
 
 ### Backend
 
@@ -436,3 +436,35 @@ The site is built to work well with screen readers and keyboard navigation:
 - **Image alt text** — article images use the article headline as alt text
 - **External links** — links that open in a new tab include that information in their `aria-label`
 - **Dyslexia-friendly mode** — see Features section above
+
+---
+
+## Changelog
+
+### 2026-04-02
+- Fixed render bug in `SearchResults`: "No media." was not shown when `multimedia[4].url` was missing; stale image URL also persisted when switching articles
+- Added full frontend test suite (Jest + React Testing Library) and backend test suite (pytest)
+- Added GitHub Actions CI/CD workflow: tests must pass before deployment to GitHub Pages proceeds
+- Renamed Docker Compose files for clarity (`docker-compose.dev.yml`, `docker-compose.prod.yml`)
+
+### 2026-03-13 — Major redesign
+- Introduced async Python/FastAPI backend to proxy NY Times API requests and keep the API key server-side
+- Added dyslexia-friendly mode (Lexend typeface, adjusted spacing, warm colour palette, persisted via `localStorage`)
+- Added accessibility features: semantic landmarks, ARIA labels, live regions, skip link, correct heading hierarchy
+- Added `sanitizeNytUrl` to block XSS and open-redirect attacks on article and image URLs
+- Added input validation for year upper bound, network error handling (frontend and backend), and `multimedia: null` crash fix
+- Improved responsive layout and added a loading indicator during search
+- Improved SEO meta tags and added Apple Touch icon
+- Deployed backend to Railway; configured CORS
+
+### 2025-07-17
+- Accessibility improvements (pre-redesign iteration)
+- Updated main page instructions and SEO meta description
+- Added WM logo; updated dependencies
+
+### 2024-05-17 — Initial release
+- React SPA deployed to GitHub Pages via `gh-pages`
+- NY Times Archive API integration (direct from the browser)
+- Article list, detail view (headline, byline, date, abstract, lead paragraph, news desk, image), and headline editor
+- Search form with year/month validation
+- Chakra UI component library and custom theme colours
