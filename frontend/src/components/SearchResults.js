@@ -84,6 +84,8 @@ function SearchResults(props) {
             foundArticle.multimedia[4].url) {
             const rawUrl = `https://nytimes.com/${foundArticle.multimedia[4].url}`;
             setMyArticleImageUrl(sanitizeNytUrl(rawUrl) || '');
+        } else {
+            setMyArticleImageUrl('');
         }
     }, [myArticleId, props.articleData]);
 
@@ -123,7 +125,7 @@ function SearchResults(props) {
                                 <Heading as='h3' size='sm' paddingTop='10px'>{myArticle.headline.main}</Heading>
                                 <Text className="date">Publication date: {articleYear} {monthDict[articleMonth]} {articleDay}</Text>
                                 <Text className="byline">{myArticle.byline.original}</Text>
-                                {myArticle.multimedia?.length > 4
+                                {myArticleImageUrl
                                     ? <Image className="article-image" src={myArticleImageUrl} alt={`Photo for article: ${myArticle.headline.main}`} marginTop='10px' marginBottom='10px' />
                                     : <Text marginTop='10px'>No media.</Text>
                                 }

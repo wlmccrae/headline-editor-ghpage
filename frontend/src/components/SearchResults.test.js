@@ -142,7 +142,7 @@ test('clicking Edit button updates the displayed headline', async () => {
   const article = makeArticle();
   renderSearchResults([article]);
   userEvent.selectOptions(screen.getByRole('combobox'), article._id);
-  await screen.findByText('Test Article Headline');
+  await screen.findByRole('heading', { name: 'Test Article Headline' });
 
   const editInput = screen.getByRole('textbox', { name: /edit the headline/i });
   userEvent.clear(editInput);
@@ -156,7 +156,7 @@ test('edited headline replaces original headline in dropdown', async () => {
   const article = makeArticle();
   renderSearchResults([article]);
   userEvent.selectOptions(screen.getByRole('combobox'), article._id);
-  await screen.findByText('Test Article Headline');
+  await screen.findByRole('heading', { name: 'Test Article Headline' });
 
   const editInput = screen.getByRole('textbox', { name: /edit the headline/i });
   userEvent.type(editInput, 'Edited Headline');
@@ -201,7 +201,7 @@ test('does NOT render Original Article link for a non-NYT URL (open redirect gua
   const article = makeArticle({ web_url: 'https://evil.com/steal-clicks' });
   renderSearchResults([article]);
   userEvent.selectOptions(screen.getByRole('combobox'), article._id);
-  await screen.findByText('Test Article Headline');
+  await screen.findByRole('heading', { name: 'Test Article Headline' });
   expect(screen.queryByRole('link', { name: /original article/i })).not.toBeInTheDocument();
 });
 
@@ -209,7 +209,7 @@ test('does NOT render Original Article link for a javascript: URL (XSS guard)', 
   const article = makeArticle({ web_url: 'javascript:alert(document.cookie)' });
   renderSearchResults([article]);
   userEvent.selectOptions(screen.getByRole('combobox'), article._id);
-  await screen.findByText('Test Article Headline');
+  await screen.findByRole('heading', { name: 'Test Article Headline' });
   expect(screen.queryByRole('link', { name: /original article/i })).not.toBeInTheDocument();
 });
 
@@ -217,7 +217,7 @@ test('does NOT render Original Article link for a data: URL (XSS guard)', async 
   const article = makeArticle({ web_url: 'data:text/html,<script>alert(1)</script>' });
   renderSearchResults([article]);
   userEvent.selectOptions(screen.getByRole('combobox'), article._id);
-  await screen.findByText('Test Article Headline');
+  await screen.findByRole('heading', { name: 'Test Article Headline' });
   expect(screen.queryByRole('link', { name: /original article/i })).not.toBeInTheDocument();
 });
 
@@ -225,7 +225,7 @@ test('does NOT render Original Article link when nytimes.com appears only in pat
   const article = makeArticle({ web_url: 'https://evil.com/nytimes.com/steal' });
   renderSearchResults([article]);
   userEvent.selectOptions(screen.getByRole('combobox'), article._id);
-  await screen.findByText('Test Article Headline');
+  await screen.findByRole('heading', { name: 'Test Article Headline' });
   expect(screen.queryByRole('link', { name: /original article/i })).not.toBeInTheDocument();
 });
 
@@ -233,7 +233,7 @@ test('does NOT render Original Article link for a subdomain of nytimes.com (stri
   const article = makeArticle({ web_url: 'https://phishing.nytimes.com.evil.com/page' });
   renderSearchResults([article]);
   userEvent.selectOptions(screen.getByRole('combobox'), article._id);
-  await screen.findByText('Test Article Headline');
+  await screen.findByRole('heading', { name: 'Test Article Headline' });
   expect(screen.queryByRole('link', { name: /original article/i })).not.toBeInTheDocument();
 });
 
@@ -241,7 +241,7 @@ test('does NOT render Original Article link when web_url is an empty string', as
   const article = makeArticle({ web_url: '' });
   renderSearchResults([article]);
   userEvent.selectOptions(screen.getByRole('combobox'), article._id);
-  await screen.findByText('Test Article Headline');
+  await screen.findByRole('heading', { name: 'Test Article Headline' });
   expect(screen.queryByRole('link', { name: /original article/i })).not.toBeInTheDocument();
 });
 
@@ -289,7 +289,7 @@ test('does not render an image with src containing "undefined"', async () => {
   const article = makeArticle({ multimedia });
   renderSearchResults([article]);
   userEvent.selectOptions(screen.getByRole('combobox'), article._id);
-  await screen.findByText('Test Article Headline');
+  await screen.findByRole('heading', { name: 'Test Article Headline' });
   const img = screen.queryByRole('img');
   if (img) expect(img.getAttribute('src')).not.toContain('undefined');
 });
