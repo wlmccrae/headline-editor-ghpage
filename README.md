@@ -344,7 +344,14 @@ All outbound HTTP calls to the NY Times API are mocked — no network access req
 
 ### Frontend — GitHub Pages
 
-Deployment is automated via GitHub Actions. Every push to `main` triggers `.github/workflows/deploy.yml`, which builds the React app and pushes the output to the `gh-pages` branch using the `gh-pages` npm package.
+Deployment is automated via GitHub Actions (`.github/workflows/deploy.yml`). Every push to `main` runs the full test suite first. The build and deploy only proceed if all tests pass.
+
+The workflow has two sequential jobs:
+
+| Job | What it does |
+|---|---|
+| `test` | Sets up Node 20 and Python 3.12, installs dependencies for both services, runs `npm test -- --watchAll=false --ci` (frontend) and `pytest tests/ -v` (backend) |
+| `deploy` | Blocked by `needs: test` — only runs when `test` succeeds; builds the React app and pushes the output to the `gh-pages` branch |
 
 No manual steps are required.
 
