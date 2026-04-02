@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DyslexiaProvider, useDyslexia } from './DyslexiaContext';
 
@@ -62,45 +62,45 @@ test('ignores non-"true" localStorage values (treats them as false)', () => {
 
 // --- Toggling: CSS class on document.body ---
 
-test('adds dyslexia-mode class to document.body when enabled', () => {
+test('adds dyslexia-mode class to document.body when enabled', async () => {
   renderWithProvider();
-  userEvent.click(screen.getByRole('button', { name: /enable/i }));
+  await act(async () => { userEvent.click(screen.getByRole('button', { name: /enable/i })); });
   expect(document.body.classList.contains('dyslexia-mode')).toBe(true);
 });
 
-test('removes dyslexia-mode class from document.body when disabled', () => {
+test('removes dyslexia-mode class from document.body when disabled', async () => {
   localStorage.setItem('dyslexiaMode', 'true');
   renderWithProvider();
-  userEvent.click(screen.getByRole('button', { name: /disable/i }));
+  await act(async () => { userEvent.click(screen.getByRole('button', { name: /disable/i })); });
   expect(document.body.classList.contains('dyslexia-mode')).toBe(false);
 });
 
 // --- Persistence: writing to localStorage ---
 
-test('saves true to localStorage when dyslexia mode is enabled', () => {
+test('saves true to localStorage when dyslexia mode is enabled', async () => {
   renderWithProvider();
-  userEvent.click(screen.getByRole('button', { name: /enable/i }));
+  await act(async () => { userEvent.click(screen.getByRole('button', { name: /enable/i })); });
   expect(localStorage.getItem('dyslexiaMode')).toBe('true');
 });
 
-test('saves false to localStorage when dyslexia mode is disabled', () => {
+test('saves false to localStorage when dyslexia mode is disabled', async () => {
   localStorage.setItem('dyslexiaMode', 'true');
   renderWithProvider();
-  userEvent.click(screen.getByRole('button', { name: /disable/i }));
+  await act(async () => { userEvent.click(screen.getByRole('button', { name: /disable/i })); });
   expect(localStorage.getItem('dyslexiaMode')).toBe('false');
 });
 
 // --- Toggle behaviour ---
 
-test('toggle flips from false to true', () => {
+test('toggle flips from false to true', async () => {
   renderWithProvider();
-  userEvent.click(screen.getByRole('button', { name: /toggle/i }));
+  await act(async () => { userEvent.click(screen.getByRole('button', { name: /toggle/i })); });
   expect(screen.getByTestId('mode-value')).toHaveTextContent('true');
 });
 
-test('toggle flips from true back to false', () => {
+test('toggle flips from true back to false', async () => {
   localStorage.setItem('dyslexiaMode', 'true');
   renderWithProvider();
-  userEvent.click(screen.getByRole('button', { name: /toggle/i }));
+  await act(async () => { userEvent.click(screen.getByRole('button', { name: /toggle/i })); });
   expect(screen.getByTestId('mode-value')).toHaveTextContent('false');
 });

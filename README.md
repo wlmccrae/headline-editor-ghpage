@@ -1,23 +1,35 @@
-# Headline Editor
+<a name="top"></a>
 
-**[Live site →](https://wlmccrae.github.io/headline-editor-ghpage/)**
+# Headline Editor
 
 Headline Editor lets you search the NY Times Archives, pick any article from any month since 1851, and rewrite its headline. Experiment with news history, craft your own versions, and explore how a single line of text shapes a story.
 
 Released: March 10, 2024
-Author: [Wanda L. McCrae](https://wandamccrae.com), Copyright 2024–2026
+Author: [Wanda L. McCrae](https://wandamccrae.com), Copyright 2024
 
-**Major Redesign**: March 13, 2026
+**[Live site →](https://wlmccrae.github.io/headline-editor-ghpage/)**
 
-Description:
+---
 
-- Async backend for NY Times API calls
-- Dyslexia-friendly mode
-- Accessibility for screen readers
+## Table of Contents
+
+- [Features](#features)
+- [Tech stack](#tech-stack)
+- [Architecture](#architecture)
+- [Project structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Local development setup](#local-development-setup)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [API reference](#api-reference)
+- [Accessibility](#accessibility)
+- [Changelog](#changelog)
+- [Bug fixes](#bug-fixes)
 
 ---
 
 ## Features
+[Back to Top](#top)
 
 - **Archive search** — retrieve every article published in any month from January 1851 to the present via the NY Times Archive API
 - **Headline editing** — select any article from the results and type a new headline; the display updates instantly
@@ -28,6 +40,7 @@ Description:
 ---
 
 ## Tech stack
+[Back to Top](#top)
 
 ### Frontend
 | Technology | Version | Purpose |
@@ -58,6 +71,7 @@ Description:
 ---
 
 ## Architecture
+[Back to Top](#top)
 
 ```
 Browser
@@ -77,6 +91,7 @@ The frontend never talks directly to the NY Times API. All archive requests go t
 ---
 
 ## Project structure
+[Back to Top](#top)
 
 ```
 headline-editor-ghpage/
@@ -112,6 +127,7 @@ headline-editor-ghpage/
 ---
 
 ## Prerequisites
+[Back to Top](#top)
 
 - **Node.js** 20+ and npm (for running the frontend locally without Docker)
 - **Python** 3.12+ (for running the backend locally without Docker)
@@ -121,6 +137,7 @@ headline-editor-ghpage/
 ---
 
 ## Local development setup
+[Back to Top](#top)
 
 ### 1. Clone the repository
 
@@ -184,29 +201,8 @@ FastAPI interactive docs are available at **http://localhost:8000/docs** (develo
 
 ---
 
-## Bug fixes
-
-The following bugs were identified through edge-case analysis and fixed alongside the test suite.
-
-### Frontend
-
-| File | Bug | Fix |
-|---|---|---|
-| [`MainPage.js`](frontend/src/components/MainPage.js) | Month `"0"` bypassed the `< 1` validation check for past years and the current year, reaching `fetch` and returning a confusing generic error instead of a month validation message | Added `formMonth < 1` to both month-validation branches |
-| [`MainPage.js`](frontend/src/components/MainPage.js) | A network exception thrown by `fetch` (e.g. offline, DNS failure) left the component stuck showing "Searching…" permanently — `setIsSearching(false)` and `setFetchError(true)` were never called | Wrapped the `fetch` call in `try/catch`; the `catch` block clears the loading state and sets the fetch error |
-| [`SearchResults.js`](frontend/src/components/SearchResults.js) | `multimedia: null` from the API response caused a `TypeError` crash in two places: the `useEffect` image-URL guard (`null[4]`) and the render check (`null.length`) | Changed guard to `multimedia != null` (covers both `null` and `undefined`); used optional chaining `multimedia?.length` in the render |
-| [`SearchResults.js`](frontend/src/components/SearchResults.js) | `multimedia[4].url` being `undefined` produced `src="https://nytimes.com/undefined"` — a silently broken image; the render condition `multimedia?.length > 4` also showed an `<Image>` even when the URL was empty, and switching articles left a stale URL in state | Added `&& foundArticle.multimedia[4].url` to the `useEffect` image-URL guard; added an `else` branch to reset `myArticleImageUrl` to `''` on article change; changed the render condition from `multimedia?.length > 4` to `myArticleImageUrl` so "No media." is shown whenever no valid URL is available |
-
-### Backend
-
-| File | Bug | Fix |
-|---|---|---|
-| [`routers/nyt_api_handler.py`](backend/routers/nyt_api_handler.py) | No upper-bound validation on `year` — values like `9999` passed validation and were forwarded to the NY Times API | Added `year > current_year` check using `datetime.now().year` |
-| [`routers/nyt_api_handler.py`](backend/routers/nyt_api_handler.py) | An `httpx.RequestError` (network unreachable, timeout) propagated as an unhandled exception, producing FastAPI's generic `{"detail": "Internal Server Error"}` 500 with no useful context | Wrapped the `httpx` call in `try/except httpx.RequestError`; raises a clean `503` with a descriptive message |
-
----
-
 ## Testing
+[Back to Top](#top)
 
 The project has a full test suite covering functionality, rendering, input validation, and security. Frontend tests use **Jest** and **React Testing Library** (included with Create React App). Backend tests use **pytest** and FastAPI's built-in **TestClient**.
 
@@ -341,6 +337,7 @@ All outbound HTTP calls to the NY Times API are mocked — no network access req
 ---
 
 ## Deployment
+[Back to Top](#top)
 
 ### Frontend — GitHub Pages
 
@@ -386,6 +383,7 @@ The frontend is served by Nginx on port 80. The production Docker build is a two
 ---
 
 ## API reference
+[Back to Top](#top)
 
 The backend exposes two endpoints. In development mode, full interactive documentation is available at `/docs` (Swagger UI) and `/redoc`.
 
@@ -425,6 +423,7 @@ Health check endpoint. Returns `{"status": "ok"}`. No authentication required. U
 ---
 
 ## Accessibility
+[Back to Top](#top)
 
 The site is built to work well with screen readers and keyboard navigation:
 
@@ -440,9 +439,12 @@ The site is built to work well with screen readers and keyboard navigation:
 ---
 
 ## Changelog
+[Back to Top](#top)
 
 ### 2026-04-02
 - Fixed render bug in `SearchResults`: "No media." was not shown when `multimedia[4].url` was missing; stale image URL also persisted when switching articles
+- Fixed `DyslexiaContext` tests: `userEvent.click` was not flushing React state updates and `useEffect` side effects synchronously; wrapped clicks in `await act(async () => {...})` so `localStorage` and `document.body` assertions are reliable
+- Fixed `SearchResults` headline-editor tests: `findByText` was matching the `<option>` element before the article detail pane loaded; changed wait condition to `findByRole('heading', ...)` to target the correct element
 - Added full frontend test suite (Jest + React Testing Library) and backend test suite (pytest)
 - Added GitHub Actions CI/CD workflow: tests must pass before deployment to GitHub Pages proceeds
 - Renamed Docker Compose files for clarity (`docker-compose.dev.yml`, `docker-compose.prod.yml`)
@@ -468,3 +470,28 @@ The site is built to work well with screen readers and keyboard navigation:
 - Article list, detail view (headline, byline, date, abstract, lead paragraph, news desk, image), and headline editor
 - Search form with year/month validation
 - Chakra UI component library and custom theme colours
+
+---
+
+## Bug fixes
+[Back to Top](#top)
+
+The following bugs were identified through edge-case analysis and fixed alongside the test suite.
+
+### Frontend
+
+| File | Bug | Fix |
+|---|---|---|
+| [`MainPage.js`](frontend/src/components/MainPage.js) | Month `"0"` bypassed the `< 1` validation check for past years and the current year, reaching `fetch` and returning a confusing generic error instead of a month validation message | Added `formMonth < 1` to both month-validation branches |
+| [`MainPage.js`](frontend/src/components/MainPage.js) | A network exception thrown by `fetch` (e.g. offline, DNS failure) left the component stuck showing "Searching…" permanently — `setIsSearching(false)` and `setFetchError(true)` were never called | Wrapped the `fetch` call in `try/catch`; the `catch` block clears the loading state and sets the fetch error |
+| [`SearchResults.js`](frontend/src/components/SearchResults.js) | `multimedia: null` from the API response caused a `TypeError` crash in two places: the `useEffect` image-URL guard (`null[4]`) and the render check (`null.length`) | Changed guard to `multimedia != null` (covers both `null` and `undefined`); used optional chaining `multimedia?.length` in the render |
+| [`SearchResults.js`](frontend/src/components/SearchResults.js) | `multimedia[4].url` being `undefined` produced `src="https://nytimes.com/undefined"` — a silently broken image; the render condition `multimedia?.length > 4` also showed an `<Image>` even when the URL was empty, and switching articles left a stale URL in state | Added `&& foundArticle.multimedia[4].url` to the `useEffect` image-URL guard; added an `else` branch to reset `myArticleImageUrl` to `''` on article change; changed the render condition from `multimedia?.length > 4` to `myArticleImageUrl` so "No media." is shown whenever no valid URL is available |
+
+### Backend
+
+| File | Bug | Fix |
+|---|---|---|
+| [`routers/nyt_api_handler.py`](backend/routers/nyt_api_handler.py) | No upper-bound validation on `year` — values like `9999` passed validation and were forwarded to the NY Times API | Added `year > current_year` check using `datetime.now().year` |
+| [`routers/nyt_api_handler.py`](backend/routers/nyt_api_handler.py) | An `httpx.RequestError` (network unreachable, timeout) propagated as an unhandled exception, producing FastAPI's generic `{"detail": "Internal Server Error"}` 500 with no useful context | Wrapped the `httpx` call in `try/except httpx.RequestError`; raises a clean `503` with a descriptive message |
+
+---
