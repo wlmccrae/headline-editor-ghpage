@@ -78,32 +78,37 @@ function MainPage() {
         if (formYear < 1851 || formYear > currentYear) {
             setYearError(true);
             setYearErrorMessage(`Enter a year between 1851 and ${currentYear}.`);
-        } else if ((formYear < currentYear) && (formMonth > 12)) {
+        } else if ((formYear < currentYear) && (formMonth < 1 || formMonth > 12)) {
             setMonthError(true);
             setMonthErrorMessage('Enter a month between 1 and 12.');
-        } else if (formYear === currentYear && (formMonth > currentMonth)) {
+        } else if (formYear === currentYear && (formMonth < 1 || formMonth > currentMonth)) {
             setMonthError(true);
             setMonthErrorMessage(`Enter a month between 1 and ${currentMonth}.`);
         } else {
             setIsSearching(true);
-            const archiveResponse = await fetch(archiveURL);
-            setIsSearching(false);
-            if (archiveResponse.ok) {
-                const archiveData = await archiveResponse.json();
-                // console.log(`***** Archive Data ==> ${JSON.stringify(archiveData)}`);
-                setCopyright(archiveData.copyright);
-                setResultsLoaded(true);
-                setarticleList(archiveData.response.docs);
-                setYearError(false);
-                setYearErrorMessage("");
-                setMonthError(false);
-                setMonthErrorMessage('');
-                setFormatError(false);
-                setFormatErrorMessage('');
-                setFetchError(false);
-            } else {
+            try {
+                const archiveResponse = await fetch(archiveURL);
+                setIsSearching(false);
+                if (archiveResponse.ok) {
+                    const archiveData = await archiveResponse.json();
+                    // console.log(`***** Archive Data ==> ${JSON.stringify(archiveData)}`);
+                    setCopyright(archiveData.copyright);
+                    setResultsLoaded(true);
+                    setarticleList(archiveData.response.docs);
+                    setYearError(false);
+                    setYearErrorMessage("");
+                    setMonthError(false);
+                    setMonthErrorMessage('');
+                    setFormatError(false);
+                    setFormatErrorMessage('');
+                    setFetchError(false);
+                } else {
+                    setFetchError(true);
+                }
+            } catch {
+                setIsSearching(false);
                 setFetchError(true);
-            };
+            }
         };
         // console.log(`***** Copyright: ${copyright}`);
         // console.log(`***** Article Info: ${JSON.stringify(articleList)}`);

@@ -184,6 +184,162 @@ FastAPI interactive docs are available at **http://localhost:8000/docs** (develo
 
 ---
 
+## Bug fixes
+
+The following bugs were identified through edge-case analysis and fixed alongside the test suite.
+
+### Frontend
+
+| File | Bug | Fix |
+|---|---|---|
+| [`MainPage.js`](frontend/src/components/MainPage.js) | Month `"0"` bypassed the `< 1` validation check for past years and the current year, reaching `fetch` and returning a confusing generic error instead of a month validation message | Added `formMonth < 1` to both month-validation branches |
+| [`MainPage.js`](frontend/src/components/MainPage.js) | A network exception thrown by `fetch` (e.g. offline, DNS failure) left the component stuck showing "Searching…" permanently — `setIsSearching(false)` and `setFetchError(true)` were never called | Wrapped the `fetch` call in `try/catch`; the `catch` block clears the loading state and sets the fetch error |
+| [`SearchResults.js`](frontend/src/components/SearchResults.js) | `multimedia: null` from the API response caused a `TypeError` crash in two places: the `useEffect` image-URL guard (`null[4]`) and the render check (`null.length`) | Changed guard to `multimedia != null` (covers both `null` and `undefined`); used optional chaining `multimedia?.length` in the render |
+| [`SearchResults.js`](frontend/src/components/SearchResults.js) | `multimedia[4].url` being `undefined` produced `src="https://nytimes.com/undefined"` — a silently broken image | Added `&& foundArticle.multimedia[4].url` to the image-URL guard so no URL is set when the property is missing |
+
+### Backend
+
+| File | Bug | Fix |
+|---|---|---|
+| [`routers/nyt_api_handler.py`](backend/routers/nyt_api_handler.py) | No upper-bound validation on `year` — values like `9999` passed validation and were forwarded to the NY Times API | Added `year > current_year` check using `datetime.now().year` |
+| [`routers/nyt_api_handler.py`](backend/routers/nyt_api_handler.py) | An `httpx.RequestError` (network unreachable, timeout) propagated as an unhandled exception, producing FastAPI's generic `{"detail": "Internal Server Error"}` 500 with no useful context | Wrapped the `httpx` call in `try/except httpx.RequestError`; raises a clean `503` with a descriptive message |
+
+---
+
+## Testing
+
+The project has a full test suite covering functionality, rendering, input validation, and security. Frontend tests use **Jest** and **React Testing Library** (included with Create React App). Backend tests use **pytest** and FastAPI's built-in **TestClient**.
+
+### Running the frontend tests
+
+```bash
+cd frontend
+npm test
+```
+
+This launches Jest in watch mode. To run once and exit:
+
+```bash
+cd frontend
+npm test -- --watchAll=false
+```
+
+### Running the backend tests
+
+```bash
+cd backend
+pip install -r requirements-test.txt
+pytest tests/ -v
+```
+
+`requirements-test.txt` installs `pytest` on top of the existing runtime dependencies. The `httpx` client used by the backend is already present in `requirements.txt` and is required by FastAPI's TestClient.
+
+---
+
+### Frontend test coverage
+
+#### [`src/App.test.js`](frontend/src/App.test.js) — 8 tests
+Smoke tests for the fully assembled app tree.
+
+| Area | What is tested |
+|---|---|
+| Rendering | `h1` heading, subheading description text |
+| Accessibility | Skip-to-main-content link present and points to `#main-content` |
+| Form | Search form, year input, month input |
+| Controls | Search button, Reset Page button |
+| Footer | Dyslexia toggle, designer attribution link |
+
+#### [`src/DyslexiaContext.test.js`](frontend/src/DyslexiaContext.test.js) — 10 tests
+Isolates the dyslexia mode context provider and `useDyslexia` hook.
+
+| Area | What is tested |
+|---|---|
+| Default state | Mode is `false` when `localStorage` is empty; no CSS class added to `<body>` |
+| localStorage read | Reads saved `true` value on mount; ignores non-`"true"` strings |
+| CSS class | `dyslexia-mode` added to `document.body` on enable; removed on disable |
+| localStorage write | Persists `"true"` and `"false"` after toggle |
+| Toggle | Flips `false → true` and `true → false` correctly |
+
+#### [`src/components/MainPage.test.js`](frontend/src/components/MainPage.test.js) — 31 tests
+Covers the search form: rendering, all validation branches, fetch lifecycle, and the Reset button.
+
+| Area | What is tested |
+|---|---|
+| Rendering | Heading, subheading, inputs, buttons, no alerts on load |
+| Format validation | Letters in year, letters in month, year shorter than 4 digits; `fetch` not called; empty form submission |
+| Year validation | Year < 1851, year in the future; `fetch` not called |
+| Month validation | Month 13 in a past year; month `0` in a past year; month `0` in the current year; future month in the current year; `fetch` not called in all cases |
+| Fetch URL | Correct `${BACKEND_URL}/nyt?year=…&month=…` constructed |
+| Loading state | "Searching…" shown while fetch is in flight |
+| Success | `SearchResults` rendered with article data; copyright text shown |
+| Fetch error | Error alert shown on non-ok response; error shown and "Searching…" cleared on network exception |
+| Reset | Clears year errors, fetch errors, and hides `SearchResults` |
+
+#### [`src/components/SearchResults.test.js`](frontend/src/components/SearchResults.test.js) — 34 tests
+Covers the article list, detail view, headline editor, all `sanitizeNytUrl` security cases, and defensive edge cases.
+
+| Area | What is tested |
+|---|---|
+| Rendering | Archive heading with month name, placeholder text, copyright |
+| Dropdown | One option per article; empty dropdown when no articles |
+| Article detail | Headline, byline, publication date, abstract, lead paragraph, news desk |
+| Media | "No media." when `multimedia` has < 5 items, is empty, is `null`, or `multimedia[4].url` is missing; image shown when ≥ 5 valid items |
+| Headline editor | Input and Edit button visible after selection; Edit updates the displayed headline |
+| Article switching | Selecting a second article replaces the first article's content |
+| Malformed data | `pub_date` as an invalid date string does not crash the component |
+| Accessibility | `aria-live="polite"` on article detail panel; combobox has accessible label |
+| **Security — `sanitizeNytUrl`** | Valid `https://www.nytimes.com/…` and `https://nytimes.com/…` URLs are accepted; `javascript:` URLs blocked (XSS); `data:` URLs blocked (XSS); non-NYT hostnames blocked (open redirect); `nytimes.com` appearing only in the path blocked (path spoofing); subdomain tricks blocked; empty string handled; image src prefixed with `https://nytimes.com/`; `src` never contains the literal string `"undefined"` |
+
+#### [`src/components/Footer.test.js`](frontend/src/components/Footer.test.js) — 10 tests
+
+| Area | What is tested |
+|---|---|
+| Rendering | Dyslexia toggle label, attribution text, designer link with correct `href` and `target="_blank"` |
+| Initial state | Toggle unchecked by default; checked when `localStorage` has `dyslexiaMode=true` |
+| Interaction | Click enables mode and adds CSS class; second click disables mode and removes class; `localStorage` updated |
+
+---
+
+### Backend test coverage
+
+#### [`tests/test_health.py`](backend/tests/test_health.py) — 3 tests
+
+| What is tested |
+|---|
+| `GET /health` returns HTTP 200 |
+| Response body is `{"status": "ok"}` |
+| Content-Type is `application/json` |
+
+#### [`tests/test_nyt.py`](backend/tests/test_nyt.py) — 29 tests
+All outbound HTTP calls to the NY Times API are mocked — no network access required.
+
+| Area | What is tested |
+|---|---|
+| Happy path | 200 response, proxied JSON contains `copyright` and `response` keys |
+| API key forwarded | Outbound request to NYT includes `api-key` query parameter |
+| URL construction | Correct NYT Archive URL built from `year`/`month` (e.g. `…/1969/7.json`) |
+| Boundary values | Year 1851, current year, month 1, month 12 all accepted |
+| Year validation | Year < 1851 → 400; year 0 → 400; year > current year → 400; year 9999 → 400; non-integer → 422; float → 422 |
+| Month validation | Month 0 → 400; month 13 → 400; negative month → 400; non-integer → 422 |
+| Missing parameters | Missing `year` → 422; missing `month` → 422; both missing → 422 |
+| Missing API key | `NYT_API_KEY` unset or empty string → 500 with descriptive error detail |
+| Network errors | `httpx.ConnectError` → 503; `httpx.ConnectTimeout` → 503 with "NY Times API" in detail |
+| Upstream errors | 401, 429, and 503 from NYT API forwarded to the client unchanged |
+| Error text length | Upstream error detail truncated to ≤ 200 characters |
+
+#### [`tests/test_main.py`](backend/tests/test_main.py) — 7 tests
+
+| Area | What is tested |
+|---|---|
+| CORS — allowed origin | `Access-Control-Allow-Origin` header matches the configured origin |
+| CORS — preflight | OPTIONS preflight returns 200 for the allowed origin |
+| CORS — unknown origin | Unregistered origin does not receive a matching CORS header |
+| CORS — multiple origins | Comma-separated `CORS_HOST` allows each listed origin independently |
+| Docs — production | `/docs` and `/redoc` return 404 when `ENV != development` |
+| Docs — development | `/docs` and `/redoc` return 200 when `ENV=development` |
+
+---
+
 ## Deployment
 
 ### Frontend — GitHub Pages
