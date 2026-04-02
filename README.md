@@ -188,14 +188,9 @@ FastAPI interactive docs are available at **http://localhost:8000/docs** (develo
 
 ### Frontend — GitHub Pages
 
-The frontend is deployed to the `gh-pages` branch via [react-gh-pages](https://github.com/gitname/react-gh-pages).
+Deployment is automated via GitHub Actions. Every push to `main` triggers `.github/workflows/deploy.yml`, which builds the React app and pushes the output to the `gh-pages` branch using the `gh-pages` npm package.
 
-```bash
-cd frontend
-npm run deploy
-```
-
-This runs `npm run build` and then pushes the `build/` directory to the `gh-pages` branch automatically.
+No manual steps are required.
 
 The `homepage` field in `package.json` must be set to the GitHub Pages URL for routing to work correctly:
 
