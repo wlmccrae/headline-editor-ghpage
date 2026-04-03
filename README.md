@@ -4,8 +4,9 @@
 
 Headline Editor lets you search the NY Times Archives, pick any article from any month since 1851, and rewrite its headline. Experiment with news history, craft your own versions, and explore how a single line of text shapes a story.
 
-Released: March 10, 2024
-Author: [Wanda L. McCrae](https://wandamccrae.com), Copyright 2024
+**Released:** 2024 March 10
+
+**Author:** [Wanda L. McCrae](https://wandamccrae.com), Copyright 2024
 
 **[Live site →](https://wlmccrae.github.io/headline-editor-ghpage/)**
 
@@ -14,17 +15,47 @@ Author: [Wanda L. McCrae](https://wandamccrae.com), Copyright 2024
 ## Table of Contents
 
 - [Features](#features)
+- [Accessibility](#accessibility)
 - [Tech stack](#tech-stack)
+  - [Frontend](#frontend)
+  - [Backend](#backend)
+  - [Infrastructure](#infrastructure)
 - [Architecture](#architecture)
 - [Project structure](#project-structure)
 - [Prerequisites](#prerequisites)
 - [Local development setup](#local-development-setup)
+  - [1. Clone the repository](#1-clone-the-repository)
+  - [2. Configure environment variables](#2-configure-environment-variables)
+  - [3a. Run with Docker (recommended)](#3a-run-with-docker-recommended)
+  - [3b. Run without Docker](#3b-run-without-docker)
 - [Testing](#testing)
+  - [Running the frontend tests](#running-the-frontend-tests)
+  - [Running the backend tests](#running-the-backend-tests)
+  - [Frontend test coverage](#frontend-test-coverage)
+    - [`src/App.test.js`](#app-test)
+    - [`src/DyslexiaContext.test.js`](#dyslexia-context-test)
+    - [`src/components/MainPage.test.js`](#main-page-test)
+    - [`src/components/SearchResults.test.js`](#search-results-test)
+    - [`src/components/Footer.test.js`](#footer-test)
+  - [Backend test coverage](#backend-test-coverage)
+    - [`tests/test_health.py`](#test-health)
+    - [`tests/test_nyt.py`](#test-nyt)
+    - [`tests/test_main.py`](#test-main)
 - [Deployment](#deployment)
+  - [Frontend — GitHub Pages](#frontend--github-pages)
+  - [Backend — Railway](#backend--railway)
+  - [Production Docker (self-hosted)](#production-docker-self-hosted)
 - [API reference](#api-reference)
-- [Accessibility](#accessibility)
+  - [`GET /nyt`](#get-nyt)
+  - [`GET /health`](#get-health)
 - [Changelog](#changelog)
+  - [2026-04-02](#2026-04-02)
+  - [2026-03-13 — Major redesign](#2026-03-13--major-redesign)
+  - [2025-07-17](#2025-07-17)
+  - [2024-05-17 — Initial release](#2024-05-17--initial-release)
 - [Bug fixes](#bug-fixes)
+  - [Frontend](#bugs-frontend)
+  - [Backend](#bugs-backend)
 
 ---
 
@@ -39,10 +70,27 @@ Author: [Wanda L. McCrae](https://wandamccrae.com), Copyright 2024
 
 ---
 
-## Tech stack
+## Accessibility
 [Back to Top](#top)
 
+The site is built to work well with screen readers and keyboard navigation:
+
+- **Skip link** — a "Skip to main content" link is the first focusable element on the page; it is visually hidden until focused
+- **Landmarks** — `<main>`, `<footer>`, and `role="region"` on the article detail panel provide structural navigation
+- **Heading hierarchy** — `h1` (page title) → `h2` (archive section) → `h3` (selected article headline)
+- **Form labels** — all inputs have programmatic labels via `aria-label`; the visual `InputLeftAddon` elements are hidden from assistive technology with `aria-hidden="true"` to avoid duplication
+- **Live regions** — `aria-live="polite"` on the results section and article detail panel announce changes without interrupting the user
+- **Image alt text** — article images use the article headline as alt text
+- **External links** — links that open in a new tab include that information in their `aria-label`
+- **Dyslexia-friendly mode** — see Features section above
+
+---
+
+## Tech stack
+
 ### Frontend
+[Back to Top](#top)
+
 | Technology | Version | Purpose |
 |---|---|---|
 | React | 18.3.1 | UI framework |
@@ -53,6 +101,8 @@ Author: [Wanda L. McCrae](https://wandamccrae.com), Copyright 2024
 | Lexend (Google Fonts) | — | Dyslexia-friendly typeface |
 
 ### Backend
+[Back to Top](#top)
+
 | Technology | Version | Purpose |
 |---|---|---|
 | Python | 3.12 | Runtime |
@@ -61,6 +111,8 @@ Author: [Wanda L. McCrae](https://wandamccrae.com), Copyright 2024
 | httpx | 0.27.2 | Async HTTP client for NYT requests |
 
 ### Infrastructure
+[Back to Top](#top)
+
 | Tool | Purpose |
 |---|---|
 | Docker | Containerisation for both services |
@@ -137,9 +189,9 @@ headline-editor-ghpage/
 ---
 
 ## Local development setup
-[Back to Top](#top)
 
 ### 1. Clone the repository
+[Back to Top](#top)
 
 ```bash
 git clone https://github.com/wlmccrae/headline-editor-ghpage.git
@@ -147,6 +199,7 @@ cd headline-editor-ghpage
 ```
 
 ### 2. Configure environment variables
+[Back to Top](#top)
 
 Create a `.env` file in the project root:
 
@@ -165,6 +218,7 @@ CORS_HOST=http://localhost:3000
 | `CORS_HOST` | Origin the backend will accept requests from |
 
 ### 3a. Run with Docker (recommended)
+[Back to Top](#top)
 
 The dev compose file runs the frontend with hot reload. The backend is expected to be already deployed (Railway) or run separately.
 
@@ -177,6 +231,7 @@ Frontend is available at **http://localhost:3000**.
 To also run the backend locally, uncomment the `backend` service block in `docker-compose.dev.yml` and rebuild.
 
 ### 3b. Run without Docker
+[Back to Top](#top)
 
 **Backend:**
 
@@ -207,6 +262,7 @@ FastAPI interactive docs are available at **http://localhost:8000/docs** (develo
 The project has a full test suite covering functionality, rendering, input validation, and security. Frontend tests use **Jest** and **React Testing Library** (included with Create React App). Backend tests use **pytest** and FastAPI's built-in **TestClient**.
 
 ### Running the frontend tests
+[Back to Top](#top)
 
 ```bash
 cd frontend
@@ -221,6 +277,7 @@ npm test -- --watchAll=false
 ```
 
 ### Running the backend tests
+[Back to Top](#top)
 
 ```bash
 cd backend
@@ -234,7 +291,11 @@ pytest tests/ -v
 
 ### Frontend test coverage
 
+<a name="app-test"></a>
+
 #### [`src/App.test.js`](frontend/src/App.test.js) — 8 tests
+[Back to Top](#top)
+
 Smoke tests for the fully assembled app tree.
 
 | Area | What is tested |
@@ -245,7 +306,11 @@ Smoke tests for the fully assembled app tree.
 | Controls | Search button, Reset Page button |
 | Footer | Dyslexia toggle, designer attribution link |
 
+<a name="dyslexia-context-test"></a>
+
 #### [`src/DyslexiaContext.test.js`](frontend/src/DyslexiaContext.test.js) — 10 tests
+[Back to Top](#top)
+
 Isolates the dyslexia mode context provider and `useDyslexia` hook.
 
 | Area | What is tested |
@@ -256,7 +321,11 @@ Isolates the dyslexia mode context provider and `useDyslexia` hook.
 | localStorage write | Persists `"true"` and `"false"` after toggle |
 | Toggle | Flips `false → true` and `true → false` correctly |
 
+<a name="main-page-test"></a>
+
 #### [`src/components/MainPage.test.js`](frontend/src/components/MainPage.test.js) — 31 tests
+[Back to Top](#top)
+
 Covers the search form: rendering, all validation branches, fetch lifecycle, and the Reset button.
 
 | Area | What is tested |
@@ -271,7 +340,11 @@ Covers the search form: rendering, all validation branches, fetch lifecycle, and
 | Fetch error | Error alert shown on non-ok response; error shown and "Searching…" cleared on network exception |
 | Reset | Clears year errors, fetch errors, and hides `SearchResults` |
 
+<a name="search-results-test"></a>
+
 #### [`src/components/SearchResults.test.js`](frontend/src/components/SearchResults.test.js) — 34 tests
+[Back to Top](#top)
+
 Covers the article list, detail view, headline editor, all `sanitizeNytUrl` security cases, and defensive edge cases.
 
 | Area | What is tested |
@@ -286,7 +359,10 @@ Covers the article list, detail view, headline editor, all `sanitizeNytUrl` secu
 | Accessibility | `aria-live="polite"` on article detail panel; combobox has accessible label |
 | **Security — `sanitizeNytUrl`** | Valid `https://www.nytimes.com/…` and `https://nytimes.com/…` URLs are accepted; `javascript:` URLs blocked (XSS); `data:` URLs blocked (XSS); non-NYT hostnames blocked (open redirect); `nytimes.com` appearing only in the path blocked (path spoofing); subdomain tricks blocked; empty string handled; image src prefixed with `https://nytimes.com/`; `src` never contains the literal string `"undefined"` |
 
+<a name="footer-test"></a>
+
 #### [`src/components/Footer.test.js`](frontend/src/components/Footer.test.js) — 10 tests
+[Back to Top](#top)
 
 | Area | What is tested |
 |---|---|
@@ -297,8 +373,12 @@ Covers the article list, detail view, headline editor, all `sanitizeNytUrl` secu
 ---
 
 ### Backend test coverage
+[Back to Top](#top)
+
+<a name="test-health"></a>
 
 #### [`tests/test_health.py`](backend/tests/test_health.py) — 3 tests
+[Back to Top](#top)
 
 | What is tested |
 |---|
@@ -306,7 +386,11 @@ Covers the article list, detail view, headline editor, all `sanitizeNytUrl` secu
 | Response body is `{"status": "ok"}` |
 | Content-Type is `application/json` |
 
+<a name="test-nyt"></a>
+
 #### [`tests/test_nyt.py`](backend/tests/test_nyt.py) — 29 tests
+[Back to Top](#top)
+
 All outbound HTTP calls to the NY Times API are mocked — no network access required.
 
 | Area | What is tested |
@@ -323,7 +407,10 @@ All outbound HTTP calls to the NY Times API are mocked — no network access req
 | Upstream errors | 401, 429, and 503 from NYT API forwarded to the client unchanged |
 | Error text length | Upstream error detail truncated to ≤ 200 characters |
 
+<a name="test-main"></a>
+
 #### [`tests/test_main.py`](backend/tests/test_main.py) — 7 tests
+[Back to Top](#top)
 
 | Area | What is tested |
 |---|---|
@@ -337,9 +424,9 @@ All outbound HTTP calls to the NY Times API are mocked — no network access req
 ---
 
 ## Deployment
-[Back to Top](#top)
 
 ### Frontend — GitHub Pages
+[Back to Top](#top)
 
 Deployment is automated via GitHub Actions (`.github/workflows/deploy.yml`). Every push to `main` runs the full test suite first. The build and deploy only proceed if all tests pass.
 
@@ -359,6 +446,7 @@ The `homepage` field in `package.json` must be set to the GitHub Pages URL for r
 ```
 
 ### Backend — Railway
+[Back to Top](#top)
 
 The backend is deployed on Railway using `backend/Dockerfile`. Set the following environment variables in the Railway project dashboard:
 
@@ -371,6 +459,7 @@ The backend is deployed on Railway using `backend/Dockerfile`. Set the following
 The `railway.toml` in the repo root configures the Railway build and start commands.
 
 ### Production Docker (self-hosted)
+[Back to Top](#top)
 
 To run the production frontend container locally or on any host:
 
@@ -387,7 +476,10 @@ The frontend is served by Nginx on port 80. The production Docker build is a two
 
 The backend exposes two endpoints. In development mode, full interactive documentation is available at `/docs` (Swagger UI) and `/redoc`.
 
+<a name="get-nyt"></a>
+
 ### `GET /nyt`
+[Back to Top](#top)
 
 Fetches all articles for a given month from the NY Times Archive API.
 
@@ -416,25 +508,12 @@ GET /nyt?year=1969&month=7
 
 ---
 
+<a name="get-health"></a>
+
 ### `GET /health`
-
-Health check endpoint. Returns `{"status": "ok"}`. No authentication required. Used for container health checks and uptime monitoring.
-
----
-
-## Accessibility
 [Back to Top](#top)
 
-The site is built to work well with screen readers and keyboard navigation:
-
-- **Skip link** — a "Skip to main content" link is the first focusable element on the page; it is visually hidden until focused
-- **Landmarks** — `<main>`, `<footer>`, and `role="region"` on the article detail panel provide structural navigation
-- **Heading hierarchy** — `h1` (page title) → `h2` (archive section) → `h3` (selected article headline)
-- **Form labels** — all inputs have programmatic labels via `aria-label`; the visual `InputLeftAddon` elements are hidden from assistive technology with `aria-hidden="true"` to avoid duplication
-- **Live regions** — `aria-live="polite"` on the results section and article detail panel announce changes without interrupting the user
-- **Image alt text** — article images use the article headline as alt text
-- **External links** — links that open in a new tab include that information in their `aria-label`
-- **Dyslexia-friendly mode** — see Features section above
+Health check endpoint. Returns `{"status": "ok"}`. No authentication required. Used for container health checks and uptime monitoring.
 
 ---
 
@@ -442,6 +521,8 @@ The site is built to work well with screen readers and keyboard navigation:
 [Back to Top](#top)
 
 ### 2026-04-02
+[Back to Top](#top)
+
 - Fixed render bug in `SearchResults`: "No media." was not shown when `multimedia[4].url` was missing; stale image URL also persisted when switching articles
 - Fixed `DyslexiaContext` tests: `userEvent.click` was not flushing React state updates and `useEffect` side effects synchronously; wrapped clicks in `await act(async () => {...})` so `localStorage` and `document.body` assertions are reliable
 - Fixed `SearchResults` headline-editor tests: `findByText` was matching the `<option>` element before the article detail pane loaded; changed wait condition to `findByRole('heading', ...)` to target the correct element
@@ -450,6 +531,8 @@ The site is built to work well with screen readers and keyboard navigation:
 - Renamed Docker Compose files for clarity (`docker-compose.dev.yml`, `docker-compose.prod.yml`)
 
 ### 2026-03-13 — Major redesign
+[Back to Top](#top)
+
 - Introduced async Python/FastAPI backend to proxy NY Times API requests and keep the API key server-side
 - Added dyslexia-friendly mode (Lexend typeface, adjusted spacing, warm colour palette, persisted via `localStorage`)
 - Added accessibility features: semantic landmarks, ARIA labels, live regions, skip link, correct heading hierarchy
@@ -460,11 +543,15 @@ The site is built to work well with screen readers and keyboard navigation:
 - Deployed backend to Railway; configured CORS
 
 ### 2025-07-17
+[Back to Top](#top)
+
 - Accessibility improvements (pre-redesign iteration)
 - Updated main page instructions and SEO meta description
 - Added WM logo; updated dependencies
 
 ### 2024-05-17 — Initial release
+[Back to Top](#top)
+
 - React SPA deployed to GitHub Pages via `gh-pages`
 - NY Times Archive API integration (direct from the browser)
 - Article list, detail view (headline, byline, date, abstract, lead paragraph, news desk, image), and headline editor
@@ -478,7 +565,10 @@ The site is built to work well with screen readers and keyboard navigation:
 
 The following bugs were identified through edge-case analysis and fixed alongside the test suite.
 
+<a name="bugs-frontend"></a>
+
 ### Frontend
+[Back to Top](#top)
 
 | File | Bug | Fix |
 |---|---|---|
@@ -487,7 +577,10 @@ The following bugs were identified through edge-case analysis and fixed alongsid
 | [`SearchResults.js`](frontend/src/components/SearchResults.js) | `multimedia: null` from the API response caused a `TypeError` crash in two places: the `useEffect` image-URL guard (`null[4]`) and the render check (`null.length`) | Changed guard to `multimedia != null` (covers both `null` and `undefined`); used optional chaining `multimedia?.length` in the render |
 | [`SearchResults.js`](frontend/src/components/SearchResults.js) | `multimedia[4].url` being `undefined` produced `src="https://nytimes.com/undefined"` — a silently broken image; the render condition `multimedia?.length > 4` also showed an `<Image>` even when the URL was empty, and switching articles left a stale URL in state | Added `&& foundArticle.multimedia[4].url` to the `useEffect` image-URL guard; added an `else` branch to reset `myArticleImageUrl` to `''` on article change; changed the render condition from `multimedia?.length > 4` to `myArticleImageUrl` so "No media." is shown whenever no valid URL is available |
 
+<a name="bugs-backend"></a>
+
 ### Backend
+[Back to Top](#top)
 
 | File | Bug | Fix |
 |---|---|---|

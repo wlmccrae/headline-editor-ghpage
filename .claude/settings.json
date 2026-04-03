@@ -1,5 +1,11 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(wc -l /Users/wmccrae/web-dev/projects/headline-editor-ghpage/frontend/src/**/*.test.js /Users/wmccrae/web-dev/projects/headline-editor-ghpage/backend/tests/*.py)",
+      "Bash(wc -l /Users/wmccrae/web-dev/projects/headline-editor-ghpage/frontend/src/**/*.css)",
+      "Bash(wc -l /Users/wmccrae/web-dev/projects/headline-editor-ghpage/frontend/src/**/*.js /Users/wmccrae/web-dev/projects/headline-editor-ghpage/backend/*.py /Users/wmccrae/web-dev/projects/headline-editor-ghpage/backend/routers/*.py)",
+      "Bash(grep -r \"test\\(\" /Users/wmccrae/web-dev/projects/headline-editor-ghpage/frontend/src/**/*.test.js /Users/wmccrae/web-dev/projects/headline-editor-ghpage/backend/tests/*.py)"
+    ],
     "additionalDirectories": [
       "/Users/wmccrae/web-dev/projects/headline-editor-ghpage/.github"
     ]
