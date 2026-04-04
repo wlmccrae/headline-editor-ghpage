@@ -21,19 +21,19 @@ test('renders the archive search form', () => {
   expect(screen.getByRole('form', { name: /search ny times archive/i })).toBeInTheDocument();
 });
 
-test('renders year and month inputs', () => {
+test('renders year input and month select', () => {
   render(<App />);
   expect(screen.getByLabelText(/year, 4 digits/i)).toBeInTheDocument();
-  expect(screen.getByLabelText(/month, number/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/^month$/i)).toBeInTheDocument();
 });
 
-test('renders Search and Reset Page buttons', () => {
+test('renders Search and Clear buttons', () => {
   render(<App />);
   expect(screen.getByRole('button', { name: /^search$/i })).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: /reset page/i })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /^clear$/i })).toBeInTheDocument();
 });
 
-test('renders the dyslexia mode toggle in the footer', () => {
+test('renders the dyslexia mode toggle in the settings bar', () => {
   render(<App />);
   expect(screen.getByLabelText(/dyslexia-friendly mode/i)).toBeInTheDocument();
 });

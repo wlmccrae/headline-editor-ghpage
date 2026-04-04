@@ -35,7 +35,7 @@ test('shows archive heading with year and month name', () => {
   expect(screen.getByRole('heading', { name: /ny times archive for 2020 june/i })).toBeInTheDocument();
 });
 
-test('shows "Please select an article." before any article is chosen', () => {
+test('shows placeholder text before any article is chosen', () => {
   renderSearchResults([makeArticle()]);
   expect(screen.getByText(/please select an article/i)).toBeInTheDocument();
 });
@@ -150,6 +150,20 @@ test('clicking Edit button updates the displayed headline', async () => {
   userEvent.click(screen.getByRole('button', { name: /apply headline edit/i }));
 
   expect(await screen.findByRole('heading', { name: 'My Rewritten Headline' })).toBeInTheDocument();
+});
+
+test('shows "Headline updated" confirmation after clicking Edit', async () => {
+  const article = makeArticle();
+  renderSearchResults([article]);
+  userEvent.selectOptions(screen.getByRole('combobox'), article._id);
+  await screen.findByRole('heading', { name: 'Test Article Headline' });
+
+  const editInput = screen.getByRole('textbox', { name: /edit the headline/i });
+  userEvent.clear(editInput);
+  userEvent.type(editInput, 'My Rewritten Headline');
+  userEvent.click(screen.getByRole('button', { name: /apply headline edit/i }));
+
+  expect(await screen.findByText(/headline updated/i)).toBeInTheDocument();
 });
 
 test('edited headline replaces original headline in dropdown', async () => {
