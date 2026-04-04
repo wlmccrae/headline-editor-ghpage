@@ -42,6 +42,7 @@ const MOCK_ARCHIVE_RESPONSE = {
 beforeEach(() => {
   global.fetch = jest.fn();
   localStorage.clear();
+  document.body.classList.remove('dyslexia-mode');
 });
 
 afterEach(() => {
@@ -328,4 +329,72 @@ test('does not call fetch when form is empty', async () => {
   userEvent.click(screen.getByRole('button', { name: /^search$/i }));
   await screen.findByText(/enter the year as 4 digits/i);
   expect(global.fetch).not.toHaveBeenCalled();
+});
+
+// --- Dyslexia toggle integration ---
+
+test('clicking the dyslexia toggle enables dyslexia mode', () => {
+  renderMainPage();
+  userEvent.click(screen.getByLabelText(/dyslexia-friendly mode/i));
+  expect(screen.getByLabelText(/dyslexia-friendly mode/i)).toBeChecked();
+  expect(document.body.classList.contains('dyslexia-mode')).toBe(true);
+});
+
+test('clicking the dyslexia toggle twice returns to the default off state', () => {
+  renderMainPage();
+  const toggle = screen.getByLabelText(/dyslexia-friendly mode/i);
+  userEvent.click(toggle);
+  userEvent.click(toggle);
+  expect(toggle).not.toBeChecked();
+  expect(document.body.classList.contains('dyslexia-mode')).toBe(false);
+});
+
+test('clicking the dyslexia toggle persists the new value to localStorage', () => {
+  renderMainPage();
+  userEvent.click(screen.getByLabelText(/dyslexia-friendly mode/i));
+  expect(localStorage.getItem('dyslexiaMode')).toBe('true');
+});
+
+// --- Year boundary values ---
+
+test('accepts 1851 (valid lower boundary) and calls fetch', async () => {
+  global.fetch.mockResolvedValue({
+    ok: true,
+    json: async () => MOCK_ARCHIVE_RESPONSE,
+  });
+  renderMainPage();
+  userEvent.type(screen.getByLabelText(/year, 4 digits/i), '1851');
+  userEvent.selectOptions(screen.getByLabelText(/^month$/i), '1');
+  userEvent.click(screen.getByRole('button', { name: /^search$/i }));
+  await waitFor(() => expect(global.fetch).toHaveBeenCalled());
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+});
+
+test('accepts the current year with the current month (valid upper boundary) and calls fetch', async () => {
+  const currentYear = String(new Date().getFullYear());
+  const currentMonth = String(new Date().getMonth() + 1);
+  global.fetch.mockResolvedValue({
+    ok: true,
+    json: async () => MOCK_ARCHIVE_RESPONSE,
+  });
+  renderMainPage();
+  userEvent.type(screen.getByLabelText(/year, 4 digits/i), currentYear);
+  userEvent.selectOptions(screen.getByLabelText(/^month$/i), currentMonth);
+  userEvent.click(screen.getByRole('button', { name: /^search$/i }));
+  await waitFor(() => expect(global.fetch).toHaveBeenCalled());
+  expect(screen.queryByText(/enter a month between/i)).not.toBeInTheDocument();
+});
+
+// --- Malformed API response ---
+
+test('shows fetch error when API response is missing response.docs', async () => {
+  global.fetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({ copyright: 'Copyright NYT' }), // no response key
+  });
+  renderMainPage();
+  userEvent.type(screen.getByLabelText(/year, 4 digits/i), VALID_YEAR);
+  userEvent.selectOptions(screen.getByLabelText(/^month$/i), VALID_MONTH);
+  userEvent.click(screen.getByRole('button', { name: /^search$/i }));
+  expect(await screen.findByText(/problem fetching the ny times archive/i)).toBeInTheDocument();
 });

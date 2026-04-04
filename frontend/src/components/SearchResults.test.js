@@ -1,9 +1,10 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ChakraProvider } from '@chakra-ui/react';
 import SearchResults from './SearchResults';
 
-const MOCK_FORM_DATA = { year: 2020, month: 6 };
+// month is a string because it comes from a <Select> element's event.target.value
+const MOCK_FORM_DATA = { year: 2020, month: '6' };
 
 function makeArticle(overrides = {}) {
   return {
@@ -31,8 +32,14 @@ function renderSearchResults(articles = [], formData = MOCK_FORM_DATA, copyright
 // --- Initial render ---
 
 test('shows archive heading with year and month name', () => {
-  renderSearchResults([], { year: 2020, month: 6 });
+  renderSearchResults([], { year: 2020, month: '6' });
   expect(screen.getByRole('heading', { name: /ny times archive for 2020 june/i })).toBeInTheDocument();
+});
+
+test('resolves month name correctly when month is a string (as produced by the Select input)', () => {
+  // monthDict uses numeric keys; JS coerces string '6' to key 6, so '6' and 6 both resolve to 'June'
+  renderSearchResults([], { year: 1920, month: '3' });
+  expect(screen.getByRole('heading', { name: /ny times archive for 1920 march/i })).toBeInTheDocument();
 });
 
 test('shows placeholder text before any article is chosen', () => {
@@ -330,4 +337,78 @@ test('detail view updates when a different article is selected', async () => {
   userEvent.selectOptions(screen.getByRole('combobox'), 'a2');
   expect(await screen.findByRole('heading', { name: 'Second Article Headline' })).toBeInTheDocument();
   expect(screen.queryByRole('heading', { name: 'First Article Headline' })).not.toBeInTheDocument();
+});
+
+// --- Headline confirmation: auto-dismiss ---
+
+afterEach(() => {
+  // Restore any spies (e.g. the setTimeout spy used in the auto-dismiss test)
+  jest.restoreAllMocks();
+});
+
+test('"Headline updated" confirmation disappears after the timeout', async () => {
+  const article = makeArticle();
+  renderSearchResults([article]);
+
+  userEvent.selectOptions(screen.getByRole('combobox'), article._id);
+  await screen.findByRole('heading', { name: 'Test Article Headline', level: 3 });
+
+  // Capture the real setTimeout before spying so we can pass all other timer
+  // calls (React scheduler, userEvent internals) through unchanged. Only the
+  // specific 2500 ms call from handleEdit is intercepted.
+  const realSetTimeout = global.setTimeout.bind(global);
+  let clearCallback;
+  jest.spyOn(global, 'setTimeout').mockImplementation((cb, delay) => {
+    if (delay === 2500) {
+      clearCallback = cb;
+      return 42;
+    }
+    return realSetTimeout(cb, delay);
+  });
+
+  userEvent.type(screen.getByRole('textbox', { name: /edit the headline/i }), 'New Headline');
+  userEvent.click(screen.getByRole('button', { name: /apply headline edit/i }));
+  expect(await screen.findByText(/headline updated/i)).toBeInTheDocument();
+
+  // Fire the captured callback to simulate 2500 ms elapsing
+  act(() => { clearCallback(); });
+  expect(screen.queryByText(/headline updated/i)).not.toBeInTheDocument();
+});
+
+// --- Headline editing: edge cases ---
+
+test('clicking Edit with no text typed sets headline to empty string and shows confirmation', async () => {
+  const article = makeArticle();
+  renderSearchResults([article]);
+  userEvent.selectOptions(screen.getByRole('combobox'), article._id);
+  await screen.findByRole('heading', { name: 'Test Article Headline', level: 3 });
+
+  // Click Edit without typing — userHeadline stays '' (initial state)
+  userEvent.click(screen.getByRole('button', { name: /apply headline edit/i }));
+
+  expect(await screen.findByText(/headline updated/i)).toBeInTheDocument();
+  // The original headline text should be gone (h3 now renders empty)
+  expect(screen.queryByRole('heading', { name: 'Test Article Headline', level: 3 })).not.toBeInTheDocument();
+});
+
+test('the same article can be edited multiple times in succession', async () => {
+  const article = makeArticle();
+  renderSearchResults([article]);
+  userEvent.selectOptions(screen.getByRole('combobox'), article._id);
+  await screen.findByRole('heading', { name: 'Test Article Headline', level: 3 });
+
+  const editInput = screen.getByRole('textbox', { name: /edit the headline/i });
+
+  // First edit
+  userEvent.clear(editInput);
+  userEvent.type(editInput, 'First Edit');
+  userEvent.click(screen.getByRole('button', { name: /apply headline edit/i }));
+  expect(await screen.findByRole('heading', { name: 'First Edit', level: 3 })).toBeInTheDocument();
+
+  // Second edit overwrites the first
+  userEvent.clear(editInput);
+  userEvent.type(editInput, 'Second Edit');
+  userEvent.click(screen.getByRole('button', { name: /apply headline edit/i }));
+  expect(await screen.findByRole('heading', { name: 'Second Edit', level: 3 })).toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: 'First Edit', level: 3 })).not.toBeInTheDocument();
 });
