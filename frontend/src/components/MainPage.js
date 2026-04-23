@@ -31,7 +31,7 @@ function MainPage() {
     const [fetchError, setFetchError] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
 
-    const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 
     // Handle when the form changes
     const handleChange = (event) => {
