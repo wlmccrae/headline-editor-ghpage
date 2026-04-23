@@ -31,6 +31,7 @@ Headline Editor lets you search the NY Times Archives, pick any article from any
 - [Testing](#testing)
   - [Running the frontend tests](#running-the-frontend-tests)
   - [Running the backend tests](#running-the-backend-tests)
+  - [Code coverage](#code-coverage)
   - [Frontend test coverage](#frontend-test-coverage)
     - [`src/App.test.js`](#app-test)
     - [`src/DyslexiaContext.test.js`](#dyslexia-context-test)
@@ -49,6 +50,7 @@ Headline Editor lets you search the NY Times Archives, pick any article from any
   - [`GET /nyt`](#get-nyt)
   - [`GET /health`](#get-health)
 - [Changelog](#changelog)
+  - [2026-04-03 — UI redesign](#2026-04-03--ui-redesign)
   - [2026-04-02](#2026-04-02)
   - [2026-03-13 — Major redesign](#2026-03-13--major-redesign)
   - [2025-07-17](#2025-07-17)
@@ -65,7 +67,7 @@ Headline Editor lets you search the NY Times Archives, pick any article from any
 - **Archive search** — retrieve every article published in any month from January 1851 to the present via the NY Times Archive API
 - **Headline editing** — select any article from the results and type a new headline; the display updates instantly
 - **Article detail view** — see the original headline, byline, publication date, lead paragraph, abstract, news desk, article image, and a link to the original NY Times article
-- **Dyslexia-friendly mode** — a toggle in the footer switches to the Lexend typeface with increased letter spacing, word spacing, and line height, and replaces the cool blue palette with warm, low-glare colors; preference is saved across sessions via `localStorage`
+- **Dyslexia-friendly mode** — a toggle in the settings bar below the page title switches to the Lexend typeface with increased letter spacing, word spacing, and line height, and replaces the cool blue palette with warm, low-glare colors; preference is saved across sessions via `localStorage`
 - **Accessibility** — semantic HTML landmarks (`<main>`, `<footer>`), correct heading hierarchy (`h1`→`h2`→`h3`), ARIA labels on all interactive controls, live regions for dynamic content, image alt text, and a skip-to-main-content link
 
 ---
@@ -156,11 +158,11 @@ headline-editor-ghpage/
 │   │   ├── App.js              # Root component, Chakra theme, skip link
 │   │   ├── DyslexiaContext.js  # Context + hook for dyslexia mode toggle
 │   │   └── components/
-│   │       ├── MainPage.js     # Search form and page layout
+│   │       ├── MainPage.js     # Search form, dyslexia toggle, page layout
 │   │       ├── MainPage.css
 │   │       ├── SearchResults.js # Article list, detail view, headline editor
 │   │       ├── SearchResults.css
-│   │       ├── Footer.js       # Dyslexia toggle switch, attribution
+│   │       ├── Footer.js       # Designer attribution
 │   │       └── Footer.css
 │   ├── Dockerfile              # Production: multi-stage build → Nginx
 │   ├── Dockerfile.dev          # Development: CRA dev server with hot reload
@@ -289,6 +291,28 @@ pytest tests/ -v
 
 ---
 
+### Code coverage
+[Back to Top](#top)
+
+<a name="code-coverage"></a>
+
+Generated with `npm test -- --watchAll=false --coverage`. The two uncovered files are Create React App boilerplate that do not run in Jest: `index.js` (the browser entry point) and `reportWebVitals.js` (a performance-metrics stub). All application components have 100% statement, function, and line coverage.
+
+| File | Statements | Branches | Functions | Lines |
+|---|---|---|---|---|
+| `App.js` | 100% | 100% | 100% | 100% |
+| `DyslexiaContext.js` | 100% | 100% | 100% | 100% |
+| `components/Footer.js` | 100% | 100% | 100% | 100% |
+| `components/MainPage.js` | 100% | 100% | 100% | 100% |
+| `components/SearchResults.js` | 100% | 96.6% | 100% | 100% |
+| `index.js` | 0% | — | — | 0% |
+| `reportWebVitals.js` | 0% | 0% | 0% | 0% |
+| **All files** | **92.2%** | **92.6%** | **91.3%** | **92.0%** |
+
+The one uncovered branch in `SearchResults.js` is the `|| ''` fallback in `setMyArticleImageUrl(sanitizeNytUrl(rawUrl) || '')`. It would only be reached if `sanitizeNytUrl` returned `null` for a URL already confirmed to be hosted on `nytimes.com` — a path that cannot occur. The `sanitizeNytUrl` function's null-return cases are all covered by the dedicated security tests.
+
+---
+
 ### Frontend test coverage
 
 <a name="app-test"></a>
@@ -306,8 +330,6 @@ Smoke tests for the fully assembled app tree.
 | Controls | Search button, Reset Page button |
 | Footer | Dyslexia toggle, designer attribution link |
 
-<a name="dyslexia-context-test"></a>
-
 #### [`src/DyslexiaContext.test.js`](frontend/src/DyslexiaContext.test.js) — 10 tests
 [Back to Top](#top)
 
@@ -324,36 +346,31 @@ Isolates the dyslexia mode context provider and `useDyslexia` hook.
 <a name="main-page-test"></a>
 
 #### [`src/components/MainPage.test.js`](frontend/src/components/MainPage.test.js) — 31 tests
-[Back to Top](#top)
-
 Covers the search form: rendering, all validation branches, fetch lifecycle, and the Reset button.
 
 | Area | What is tested |
 |---|---|
-| Rendering | Heading, subheading, inputs, buttons, no alerts on load |
-| Format validation | Letters in year, letters in month, year shorter than 4 digits; `fetch` not called; empty form submission |
-| Year validation | Year < 1851, year in the future; `fetch` not called |
-| Month validation | Month 13 in a past year; month `0` in a past year; month `0` in the current year; future month in the current year; `fetch` not called in all cases |
+| Rendering | Heading, subheading, year input, month select (all 12 options), Search and Clear buttons, no alerts on load |
+| Dyslexia toggle | Click enables mode and adds CSS class; double-click returns to off; `localStorage` updated |
+| Format validation | Letters in year; no month selected; year shorter than 4 digits; `fetch` not called; empty form submission |
+| Year validation | Year < 1851; year in the future; year = 1851 accepted; `fetch` not called on errors |
+| Month validation | Future month in the current year; current year + current month accepted; `fetch` not called on error |
 | Fetch URL | Correct `${BACKEND_URL}/nyt?year=…&month=…` constructed |
 | Loading state | "Searching…" shown while fetch is in flight |
 | Success | `SearchResults` rendered with article data; copyright text shown |
 | Fetch error | Error alert shown on non-ok response; error shown and "Searching…" cleared on network exception |
 | Reset | Clears year errors, fetch errors, and hides `SearchResults` |
 
-<a name="search-results-test"></a>
-
 #### [`src/components/SearchResults.test.js`](frontend/src/components/SearchResults.test.js) — 34 tests
-[Back to Top](#top)
-
 Covers the article list, detail view, headline editor, all `sanitizeNytUrl` security cases, and defensive edge cases.
 
 | Area | What is tested |
 |---|---|
-| Rendering | Archive heading with month name, placeholder text, copyright |
+| Rendering | Archive heading with month name; month name resolves correctly from a string value (as produced by the `<Select>` input); placeholder text before selection; copyright |
 | Dropdown | One option per article; empty dropdown when no articles |
 | Article detail | Headline, byline, publication date, abstract, lead paragraph, news desk |
 | Media | "No media." when `multimedia` has < 5 items, is empty, is `null`, or `multimedia[4].url` is missing; image shown when ≥ 5 valid items |
-| Headline editor | Input and Edit button visible after selection; Edit updates the displayed headline |
+| Headline editor | Input and Edit button visible after selection; Edit updates displayed headline; "✓ Headline updated" confirmation appears after edit; confirmation auto-dismisses after 2.5 s; editing with no text typed empties the headline gracefully; the same article can be edited multiple times in succession |
 | Article switching | Selecting a second article replaces the first article's content |
 | Malformed data | `pub_date` as an invalid date string does not crash the component |
 | Accessibility | `aria-live="polite"` on article detail panel; combobox has accessible label |
@@ -362,13 +379,10 @@ Covers the article list, detail view, headline editor, all `sanitizeNytUrl` secu
 <a name="footer-test"></a>
 
 #### [`src/components/Footer.test.js`](frontend/src/components/Footer.test.js) — 10 tests
-[Back to Top](#top)
 
 | Area | What is tested |
 |---|---|
-| Rendering | Dyslexia toggle label, attribution text, designer link with correct `href` and `target="_blank"` |
-| Initial state | Toggle unchecked by default; checked when `localStorage` has `dyslexiaMode=true` |
-| Interaction | Click enables mode and adds CSS class; second click disables mode and removes class; `localStorage` updated |
+| Rendering | Attribution text, designer link with correct `href` and `target="_blank"` |
 
 ---
 
@@ -519,6 +533,17 @@ Health check endpoint. Returns `{"status": "ok"}`. No authentication required. U
 
 ## Changelog
 [Back to Top](#top)
+
+### 2026-04-03 — UI redesign
+[Back to Top](#top)
+
+- Moved dyslexia toggle from the footer to a settings bar below the page title for better discoverability
+- Replaced the month number input with a named month `<Select>` (January–December)
+- Renamed "Reset Page" button to "Clear"
+- Added "✓ Headline updated" confirmation message after editing a headline; auto-dismisses after 2.5 s
+- Added "No articles were found" message when an archive search returns 0 results
+- Added descriptive placeholder text in the article detail panel before an article is selected
+- Expanded frontend test suite from 82 to **95 tests** across 5 suites; new coverage includes dyslexia toggle integration in `MainPage`, year boundary values (1851, current year/month), malformed API responses, headline confirmation auto-dismiss, empty headline editing, multiple consecutive edits, and string-typed month values from the Select input
 
 ### 2026-04-02
 [Back to Top](#top)

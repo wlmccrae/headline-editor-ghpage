@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import SearchResults from "./SearchResults";
+import { useDyslexia } from '../DyslexiaContext';
 import {
     Heading,
     Center,
@@ -7,7 +8,8 @@ import {
     Input, InputGroup, InputLeftAddon,
     Button, Divider, Text,
     Card, CardHeader, CardBody, CardFooter,
-    Alert, AlertIcon } from '@chakra-ui/react'
+    Alert, AlertIcon,
+    Select, Switch, FormControl, FormLabel } from '@chakra-ui/react'
 import './MainPage.css';
 
 function organizeData(rawData) {
@@ -20,14 +22,15 @@ function organizeData(rawData) {
 };
 
 function MainPage() {
+    const { dyslexiaMode, setDyslexiaMode } = useDyslexia();
     const [copyright, setCopyright] = useState('');
     const [resultsLoaded, setResultsLoaded] = useState(false);
     const [articleList, setarticleList] = useState([]);
     const [archiveFormData, setArchiveFormData] = useState({
-        month: 0,
+        month: "",
         year: 0,
     });
-    const [formDate, setFormDate] = useState({month: 0, year: 0,});
+    const [formDate, setFormDate] = useState({month: "", year: 0,});
     const [yearError, setYearError] = useState(false);
     const [yearErrorMessage, setYearErrorMessage] = useState("");
     const [monthError, setMonthError] = useState(false);
@@ -37,7 +40,7 @@ function MainPage() {
     const [fetchError, setFetchError] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
 
-    const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 
     // Handle when the form changes
     const handleChange = (event) => {
@@ -47,7 +50,7 @@ function MainPage() {
         });
     };
 
-    // Handle the reset page button.
+    // Handle the clear button.
     const resetPage = async(event) => {
         event.preventDefault();
         setResultsLoaded(false);
@@ -73,11 +76,10 @@ function MainPage() {
         let currentMonth = new Date().getMonth();
         currentMonth++;  // Increase by one, as the Date object has Jan = 0.
         const yearRegex = /^\d{4}$/;
-        const monthRegex = /^\d{1,2}$/;
 
-        if (!yearRegex.test(archiveFormData.year) || !monthRegex.test(archiveFormData.month)) {
+        if (!yearRegex.test(archiveFormData.year) || !archiveFormData.month) {
             setFormatError(true);
-            setFormatErrorMessage('Enter the year as 4 digits (YYYY) and the month as a number between 1 and 12');
+            setFormatErrorMessage('Enter the year as 4 digits (YYYY) and select a month.');
             return;
         }
 
@@ -87,9 +89,6 @@ function MainPage() {
         if (formYear < 1851 || formYear > currentYear) {
             setYearError(true);
             setYearErrorMessage(`Enter a year between 1851 and ${currentYear}.`);
-        } else if ((formYear < currentYear) && (formMonth < 1 || formMonth > 12)) {
-            setMonthError(true);
-            setMonthErrorMessage('Enter a month between 1 and 12.');
         } else if (formYear === currentYear && (formMonth < 1 || formMonth > currentMonth)) {
             setMonthError(true);
             setMonthErrorMessage(`Enter a month between 1 and ${currentMonth}.`);
@@ -100,7 +99,6 @@ function MainPage() {
                 setIsSearching(false);
                 if (archiveResponse.ok) {
                     const archiveData = await archiveResponse.json();
-                    // console.log(`***** Archive Data ==> ${JSON.stringify(archiveData)}`);
                     setCopyright(archiveData.copyright);
                     setResultsLoaded(true);
                     setarticleList(archiveData.response.docs);
@@ -119,45 +117,27 @@ function MainPage() {
                 setFetchError(true);
             }
         };
-        // console.log(`***** Copyright: ${copyright}`);
-        // console.log(`***** Article Info: ${JSON.stringify(articleList)}`);
-        // console.log(`***** Component Status: ${resultsLoaded}`);
     };
-
-    // Handle the search archive button.
-    // const searchArchive = async (event) => {
-    //     const searchURL = `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=election&api-key=${API_KEY}`;
-    //     event.preventDefault();
-
-    //     const archiveResponse = await fetch(searchURL);
-    //     if (archiveResponse.ok) {
-    //         const archiveData = await archiveResponse.json();
-    //         console.log(`***** Search Archive Data ==> ${JSON.stringify(archiveData)}`);
-
-    //     } else {
-    //         window.confirm("There was a problem searching the NY Times archive.")
-    //     }
-    // };
-
-    // Handle the Top Stories button.
-    // const fetchTopStories = async (event) => {
-    //     event.preventDefault();
-
-    //     const archiveResponse = await fetch(topStoriesURL);
-    //     if (archiveResponse.ok) {
-    //         const archiveData = await archiveResponse.json();
-    //         console.log(`***** Top Stories Data ==> ${JSON.stringify(archiveData)}`);
-
-    //     } else {
-    //         window.confirm("There was a problem fetching the NY Times Top Stories.")
-    //     }
-    // };
 
     return (
         <main id="main-content" className="content">
             <div className="searches">
                 <Center><Heading as='h1' size='xl' color="brand.100">Headline Editor</Heading></Center>
-                <Center><Text fontSize='xl' marginBottom='10px' color="brand.100" textAlign='center'>Play with NY Times Headlines from the Archives</Text></Center>
+                <Center><Text fontSize='xl' marginBottom='8px' color="brand.100" textAlign='center'>Play with NY Times Headlines from the Archives</Text></Center>
+                <Center marginBottom='12px'>
+                    <FormControl display='flex' alignItems='center' width='auto'>
+                        <Switch
+                            id='dyslexia-mode'
+                            isChecked={dyslexiaMode}
+                            onChange={() => setDyslexiaMode(!dyslexiaMode)}
+                            size='sm'
+                            colorScheme='blue'
+                        />
+                        <FormLabel htmlFor='dyslexia-mode' mb='0' ml='2' fontSize='sm' fontWeight='normal' cursor='pointer' color="brand.100">
+                            Dyslexia-friendly mode
+                        </FormLabel>
+                    </FormControl>
+                </Center>
                 <Card bg="brand.200" className="search-card" width={['95%', '400px']} maxWidth='400px' boxShadow='lg' border='1px' borderColor='gray.100'>
                     <CardHeader>
                         <Text color="brand.100">Retrieve all articles for any month between 1851 and now. If the current year/month does not work&mdash;recent content can be restricted&mdash;try earlier dates.</Text>
@@ -170,8 +150,21 @@ function MainPage() {
                                     <Input onChange={handleChange} type="text" id="year" name="year" placeholder="2024" variant='outline' w='100px' bg="brand.300" aria-label="Year, 4 digits (YYYY)"/>
                                 </InputGroup>
                                 <InputGroup>
-                                    <InputLeftAddon w='140px' color="brand.100" aria-hidden="true">Month (M)</InputLeftAddon>
-                                    <Input onChange={handleChange} type="text" id="month" name="month" placeholder="5" variant='outline' w='100px' bg="brand.300" aria-label="Month, number 1 to 12"/>
+                                    <InputLeftAddon w='140px' color="brand.100" aria-hidden="true">Month</InputLeftAddon>
+                                    <Select onChange={handleChange} id="month" name="month" aria-label="Month" placeholder='Select month' borderLeftRadius='0' bg="brand.300" size='md'>
+                                        <option value="1">January</option>
+                                        <option value="2">February</option>
+                                        <option value="3">March</option>
+                                        <option value="4">April</option>
+                                        <option value="5">May</option>
+                                        <option value="6">June</option>
+                                        <option value="7">July</option>
+                                        <option value="8">August</option>
+                                        <option value="9">September</option>
+                                        <option value="10">October</option>
+                                        <option value="11">November</option>
+                                        <option value="12">December</option>
+                                    </Select>
                                 </InputGroup>
                             </Stack>
                         </form>
@@ -180,7 +173,7 @@ function MainPage() {
                     <CardFooter>
                         <Stack spacing={2} direction='row' align='center'>
                             <Button type="button" onClick={fetchArchive} className="button" size='sm' color="brand.300" bg="brand.100">Search</Button>
-                            <Button type="button" onClick={resetPage} className="button" size='sm' color="brand.100" bg="brand.300">Reset Page</Button>
+                            <Button type="button" onClick={resetPage} className="button" size='sm' color="brand.100" bg="brand.300">Clear</Button>
                         </Stack>
                     </CardFooter>
                     { yearError  &&
@@ -210,7 +203,13 @@ function MainPage() {
                 </Card>
             </div>
             <div className="results" aria-live="polite">
-                {resultsLoaded ? <SearchResults formData={formDate} articleData={articleList} copyright={copyright} /> : isSearching ? <div className="initialdisplay"><Heading as='h2' size='md' color="brand.100">Searching...</Heading></div> : null}
+                {resultsLoaded
+                    ? articleList.length === 0
+                        ? <div className="initialdisplay"><Text color="brand.100">No articles were found for this date. Try a different month or year.</Text></div>
+                        : <SearchResults formData={formDate} articleData={articleList} copyright={copyright} />
+                    : isSearching
+                        ? <div className="initialdisplay"><Heading as='h2' size='md' color="brand.100">Searching...</Heading></div>
+                        : null}
             </div>
         </main>
 

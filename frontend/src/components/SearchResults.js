@@ -32,6 +32,7 @@ function SearchResults(props) {
     const [myArticleImageUrl, setMyArticleImageUrl] = useState('');
     const [articleLoaded, setArticleLoaded] = useState(false);
     const [userHeadline, setUserHeadline] = useState('');
+    const [headlineUpdated, setHeadlineUpdated] = useState(false);
     const [articleYear, setArticleYear] = useState(0);
     const [articleDay, setArticleDay] = useState(0);
     const [articleMonth, setArticleMonth] = useState(0);
@@ -55,6 +56,8 @@ function SearchResults(props) {
                 main: userHeadline,  // Update the nested property
             },
         });
+        setHeadlineUpdated(true);
+        setTimeout(() => setHeadlineUpdated(false), 2500);
     };
 
     const sanitizeNytUrl = (url) => {
@@ -116,6 +119,7 @@ function SearchResults(props) {
                             <VStack spacing='5px' paddingTop='20px' paddingRight='10px' justifyContent='left'>
                                 <Input onChange={editHeadline} type="text" id="editheadline" name="editheadline" placeholder="Edit the headline" aria-label="Edit the headline" />
                                 <Button type="button" onClick={handleEdit} size='sm' className='button' color="brand.300" bg="brand.100" aria-label="Apply headline edit">Edit</Button>
+                                { headlineUpdated && <Text color="green.600" fontSize='sm' aria-live="polite">&#10003; Headline updated</Text> }
                             </VStack>
                         }
                     </Box>
@@ -136,7 +140,7 @@ function SearchResults(props) {
                                     <Link textDecoration="underline" href={sanitizeNytUrl(myArticle.web_url)} target="_blank" isExternal aria-label="Read the original article on NY Times website, opens in new tab">Original Article</Link>
                                 )}
                             </>
-                        : <Text paddingTop='10px'>Please select an article.</Text>}
+                        : <Text paddingTop='10px'>Please select an article to see its details here.</Text>}
                     </Box>
                 </Flex>
                 <Text className="copyright" fontSize='sm' marginTop='30px'>All articles are {props.copyright}</Text>

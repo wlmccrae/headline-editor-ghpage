@@ -2,8 +2,13 @@ services:
   frontend:
     build:
       context: ./frontend
-      args:
-        REACT_APP_BACKEND_URL: ${REACT_APP_BACKEND_URL}
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
     ports:
-      - "80:80"
-    restart: unless-stopped
+      - "5173:5173"
+    environment:
+      - VITE_BACKEND_URL=${VITE_BACKEND_URL}
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
