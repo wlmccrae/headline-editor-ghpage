@@ -50,6 +50,8 @@ Headline Editor lets you search the NY Times Archives, pick any article from any
   - [`GET /nyt`](#get-nyt)
   - [`GET /health`](#get-health)
 - [Changelog](#changelog)
+  - [2026-04-23 — Migrate to Vite](#2026-04-23--migrate-to-vite)
+  - [2026-04-04](#2026-04-04)
   - [2026-04-03 — UI redesign](#2026-04-03--ui-redesign)
   - [2026-04-02](#2026-04-02)
   - [2026-03-13 — Major redesign](#2026-03-13--major-redesign)
@@ -100,6 +102,8 @@ The site is built to work well with screen readers and keyboard navigation:
 | Emotion | 11.x | CSS-in-JS (Chakra UI dependency) |
 | Framer Motion | 11.x | Animation (Chakra UI dependency) |
 | React Router DOM | 6.23.1 | Client-side routing |
+| Vite | 5.x | Build tool and dev server |
+| Vitest | 2.x | Test runner |
 | Lexend (Google Fonts) | — | Dyslexia-friendly typeface |
 
 ### Backend
@@ -118,7 +122,6 @@ The site is built to work well with screen readers and keyboard navigation:
 | Tool | Purpose |
 |---|---|
 | Docker | Containerisation for both services |
-| Nginx | Static file serving in production frontend container |
 | Railway | Backend hosting |
 | GitHub Pages | Frontend hosting (`gh-pages` branch) |
 
@@ -131,8 +134,7 @@ The site is built to work well with screen readers and keyboard navigation:
 Browser
   │
   ├── GitHub Pages (frontend)
-  │     React SPA built with Create React App
-  │     Served by Nginx inside Docker
+  │     React SPA built with Vite
   │
   └── Railway (backend)
         FastAPI application
@@ -150,8 +152,8 @@ The frontend never talks directly to the NY Times API. All archive requests go t
 ```
 headline-editor-ghpage/
 ├── frontend/
-│   ├── public/
-│   │   └── index.html          # HTML shell, CSP headers
+│   ├── index.html              # HTML shell, CSP headers
+│   ├── public/                 # Static assets (icons, manifest, robots.txt)
 │   ├── src/
 │   │   ├── index.js            # React entry point
 │   │   ├── index.css           # Global styles, dyslexia-mode overrides
@@ -164,17 +166,19 @@ headline-editor-ghpage/
 │   │       ├── SearchResults.css
 │   │       ├── Footer.js       # Designer attribution
 │   │       └── Footer.css
-│   ├── Dockerfile              # Production: multi-stage build → Nginx
-│   ├── Dockerfile.dev          # Development: CRA dev server with hot reload
+│   ├── Dockerfile              # Production: Node 20 Alpine, runs Vite dev server
+│   ├── Dockerfile.dev          # Development: Vite dev server with hot reload
+│   ├── vite.config.js          # Vite configuration
 │   └── package.json
 ├── backend/
 │   ├── main.py                 # FastAPI app, CORS middleware
 │   ├── routers/
 │   │   └── nyt_api_handler.py  # GET /nyt and GET /health endpoints
 │   ├── requirements.txt
+│   ├── railway.toml            # Railway build and start configuration
 │   └── Dockerfile              # python:3.12-slim, runs as non-root user
-├── docker-compose.dev.yml      # Development: frontend container only
-├── docker-compose.prod.yml     # Production: frontend container on port 80
+├── docker-compose-dev.yml      # Development: backend + frontend containers
+├── docker-compose-prod.yml     # Production: frontend container on port 5173
 └── .env                        # Local environment variables (not committed)
 ```
 
@@ -208,29 +212,27 @@ Create a `.env` file in the project root:
 ```env
 ENV=development
 NYT_API_KEY=your_nyt_api_key_here
-REACT_APP_BACKEND_URL=http://localhost:8000
-CORS_HOST=http://localhost:3000
+VITE_BACKEND_URL=http://localhost:8000
+CORS_HOST=http://localhost:5173
 ```
 
 | Variable | Description |
 |---|---|
 | `ENV` | Set to `development` to enable FastAPI `/docs` and `/redoc` |
 | `NYT_API_KEY` | Your NY Times API key |
-| `REACT_APP_BACKEND_URL` | URL the browser uses to reach the backend |
+| `VITE_BACKEND_URL` | URL the browser uses to reach the backend |
 | `CORS_HOST` | Origin the backend will accept requests from |
 
 ### 3a. Run with Docker (recommended)
 [Back to Top](#top)
 
-The dev compose file runs the frontend with hot reload. The backend is expected to be already deployed (Railway) or run separately.
+The dev compose file runs both the frontend (hot reload) and backend.
 
 ```bash
-docker compose -f docker-compose.dev.yml up --build
+docker compose -f docker-compose-dev.yml up --build
 ```
 
-Frontend is available at **http://localhost:3000**.
-
-To also run the backend locally, uncomment the `backend` service block in `docker-compose.dev.yml` and rebuild.
+Frontend is available at **http://localhost:5173**. Backend is available at **http://localhost:8000**.
 
 ### 3b. Run without Docker
 [Back to Top](#top)
@@ -250,10 +252,10 @@ NYT_API_KEY=your_key ENV=development uvicorn main:app --reload --port 8000
 ```bash
 cd frontend
 npm install
-REACT_APP_BACKEND_URL=http://localhost:8000 npm start
+VITE_BACKEND_URL=http://localhost:8000 npm start
 ```
 
-Frontend is available at **http://localhost:3000**.
+Frontend is available at **http://localhost:5173**.
 FastAPI interactive docs are available at **http://localhost:8000/docs** (development mode only).
 
 ---
@@ -261,7 +263,7 @@ FastAPI interactive docs are available at **http://localhost:8000/docs** (develo
 ## Testing
 [Back to Top](#top)
 
-The project has a full test suite covering functionality, rendering, input validation, and security. Frontend tests use **Jest** and **React Testing Library** (included with Create React App). Backend tests use **pytest** and FastAPI's built-in **TestClient**.
+The project has a full test suite covering functionality, rendering, input validation, and security. Frontend tests use **Vitest** and **React Testing Library**. Backend tests use **pytest** and FastAPI's built-in **TestClient**.
 
 ### Running the frontend tests
 [Back to Top](#top)
@@ -271,12 +273,7 @@ cd frontend
 npm test
 ```
 
-This launches Jest in watch mode. To run once and exit:
-
-```bash
-cd frontend
-npm test -- --watchAll=false
-```
+This runs Vitest in run mode (executes all tests once and exits).
 
 ### Running the backend tests
 [Back to Top](#top)
@@ -296,7 +293,7 @@ pytest tests/ -v
 
 <a name="code-coverage"></a>
 
-Generated with `npm test -- --watchAll=false --coverage`. The two uncovered files are Create React App boilerplate that do not run in Jest: `index.js` (the browser entry point) and `reportWebVitals.js` (a performance-metrics stub). All application components have 100% statement, function, and line coverage.
+Generated with `npm test -- --coverage`. The two uncovered files, `index.js` (the browser entry point) and `reportWebVitals.js` (a performance-metrics stub), are not executed by Vitest. All application components have 100% statement, function, and line coverage.
 
 | File | Statements | Branches | Functions | Lines |
 |---|---|---|---|---|
@@ -306,7 +303,7 @@ Generated with `npm test -- --watchAll=false --coverage`. The two uncovered file
 | `components/MainPage.js` | 100% | 100% | 100% | 100% |
 | `components/SearchResults.js` | 100% | 96.6% | 100% | 100% |
 | `index.js` | 0% | — | — | 0% |
-| `reportWebVitals.js` | 0% | 0% | 0% | 0% |
+| `reportWebVitals.js` | 0% | — | 0% | 0% |
 | **All files** | **92.2%** | **92.6%** | **91.3%** | **92.0%** |
 
 The one uncovered branch in `SearchResults.js` is the `|| ''` fallback in `setMyArticleImageUrl(sanitizeNytUrl(rawUrl) || '')`. It would only be reached if `sanitizeNytUrl` returned `null` for a URL already confirmed to be hosted on `nytimes.com` — a path that cannot occur. The `sanitizeNytUrl` function's null-return cases are all covered by the dedicated security tests.
@@ -326,11 +323,14 @@ Smoke tests for the fully assembled app tree.
 |---|---|
 | Rendering | `h1` heading, subheading description text |
 | Accessibility | Skip-to-main-content link present and points to `#main-content` |
-| Form | Search form, year input, month input |
-| Controls | Search button, Reset Page button |
-| Footer | Dyslexia toggle, designer attribution link |
+| Form | Search form, year input, month select |
+| Controls | Search button, Clear button |
+| Settings bar | Dyslexia-friendly mode toggle |
+| Footer | Designer attribution link |
 
-#### [`src/DyslexiaContext.test.js`](frontend/src/DyslexiaContext.test.js) — 10 tests
+<a name="dyslexia-context-test"></a>
+
+#### [`src/DyslexiaContext.test.js`](frontend/src/DyslexiaContext.test.js) — 11 tests
 [Back to Top](#top)
 
 Isolates the dyslexia mode context provider and `useDyslexia` hook.
@@ -345,8 +345,10 @@ Isolates the dyslexia mode context provider and `useDyslexia` hook.
 
 <a name="main-page-test"></a>
 
-#### [`src/components/MainPage.test.js`](frontend/src/components/MainPage.test.js) — 31 tests
-Covers the search form: rendering, all validation branches, fetch lifecycle, and the Reset button.
+#### [`src/components/MainPage.test.js`](frontend/src/components/MainPage.test.js) — 35 tests
+[Back to Top](#top)
+
+Covers the search form: rendering, all validation branches, fetch lifecycle, the Clear button, dyslexia toggle integration, year boundary values, and malformed API responses.
 
 | Area | What is tested |
 |---|---|
@@ -357,11 +359,15 @@ Covers the search form: rendering, all validation branches, fetch lifecycle, and
 | Month validation | Future month in the current year; current year + current month accepted; `fetch` not called on error |
 | Fetch URL | Correct `${BACKEND_URL}/nyt?year=…&month=…` constructed |
 | Loading state | "Searching…" shown while fetch is in flight |
-| Success | `SearchResults` rendered with article data; copyright text shown |
-| Fetch error | Error alert shown on non-ok response; error shown and "Searching…" cleared on network exception |
-| Reset | Clears year errors, fetch errors, and hides `SearchResults` |
+| Success | `SearchResults` rendered with article data; copyright text shown; empty `docs` array shows no-articles message |
+| Fetch error | Error alert on non-ok response; error shown and "Searching…" cleared on network exception; missing `response.docs` caught and shown as error |
+| Clear | Clears year errors, fetch errors, and hides `SearchResults` |
 
-#### [`src/components/SearchResults.test.js`](frontend/src/components/SearchResults.test.js) — 34 tests
+<a name="search-results-test"></a>
+
+#### [`src/components/SearchResults.test.js`](frontend/src/components/SearchResults.test.js) — 38 tests
+[Back to Top](#top)
+
 Covers the article list, detail view, headline editor, all `sanitizeNytUrl` security cases, and defensive edge cases.
 
 | Area | What is tested |
@@ -378,7 +384,10 @@ Covers the article list, detail view, headline editor, all `sanitizeNytUrl` secu
 
 <a name="footer-test"></a>
 
-#### [`src/components/Footer.test.js`](frontend/src/components/Footer.test.js) — 10 tests
+#### [`src/components/Footer.test.js`](frontend/src/components/Footer.test.js) — 3 tests
+[Back to Top](#top)
+
+The dyslexia toggle was moved from the Footer to the MainPage settings bar; its interaction tests now live in `MainPage.test.js`. This file covers only the designer attribution.
 
 | Area | What is tested |
 |---|---|
@@ -402,7 +411,7 @@ Covers the article list, detail view, headline editor, all `sanitizeNytUrl` secu
 
 <a name="test-nyt"></a>
 
-#### [`tests/test_nyt.py`](backend/tests/test_nyt.py) — 29 tests
+#### [`tests/test_nyt.py`](backend/tests/test_nyt.py) — 31 tests
 [Back to Top](#top)
 
 All outbound HTTP calls to the NY Times API are mocked — no network access required.
@@ -423,7 +432,7 @@ All outbound HTTP calls to the NY Times API are mocked — no network access req
 
 <a name="test-main"></a>
 
-#### [`tests/test_main.py`](backend/tests/test_main.py) — 7 tests
+#### [`tests/test_main.py`](backend/tests/test_main.py) — 8 tests
 [Back to Top](#top)
 
 | Area | What is tested |
@@ -448,7 +457,7 @@ The workflow has two sequential jobs:
 
 | Job | What it does |
 |---|---|
-| `test` | Sets up Node 20 and Python 3.12, installs dependencies for both services, runs `npm test -- --watchAll=false --ci` (frontend) and `pytest tests/ -v` (backend) |
+| `test` | Sets up Node 22 and Python 3.12, installs dependencies for both services, runs `npm test` (frontend) and `pytest tests/ -v` (backend) |
 | `deploy` | Blocked by `needs: test` — only runs when `test` succeeds; builds the React app and pushes the output to the `gh-pages` branch |
 
 No manual steps are required.
@@ -470,7 +479,7 @@ The backend is deployed on Railway using `backend/Dockerfile`. Set the following
 | `CORS_HOST` | The GitHub Pages frontend URL |
 | `ENV` | `production` |
 
-The `railway.toml` in the repo root configures the Railway build and start commands.
+The `railway.toml` in the `backend/` directory configures the Railway build and start commands.
 
 ### Production Docker (self-hosted)
 [Back to Top](#top)
@@ -478,10 +487,10 @@ The `railway.toml` in the repo root configures the Railway build and start comma
 To run the production frontend container locally or on any host:
 
 ```bash
-REACT_APP_BACKEND_URL=https://your-backend-url docker compose -f docker-compose.prod.yml up --build
+VITE_BACKEND_URL=https://your-backend-url docker compose -f docker-compose-prod.yml up --build
 ```
 
-The frontend is served by Nginx on port 80. The production Docker build is a two-stage build: Node builds the React app, then the compiled output is copied into an Nginx Alpine image.
+The frontend is served by the Vite dev server on port 5173.
 
 ---
 
@@ -534,6 +543,21 @@ Health check endpoint. Returns `{"status": "ok"}`. No authentication required. U
 ## Changelog
 [Back to Top](#top)
 
+### 2026-04-23 — Migrate to Vite
+[Back to Top](#top)
+
+- Replaced Create React App (`react-scripts`) with Vite 5 and Vitest 2
+- Added `vite.config.js`; removed CRA-specific config (browserslist, eslintConfig, eject script)
+- Build output directory changed from `build/` to `dist/`
+- Dev server port changed from 3000 to 5173; updated Docker Compose files and `.env` files accordingly
+- Environment variable prefix changed from `REACT_APP_` to `VITE_` (`REACT_APP_BACKEND_URL` → `VITE_BACKEND_URL`)
+- CI test command simplified from `npm test -- --watchAll=false --ci` to `npm test` (Vitest exits automatically after a run)
+
+### 2026-04-04
+[Back to Top](#top)
+
+- Fixed `docker-compose-prod.yml`: was using a multi-stage Nginx build on port 80; changed to use `Dockerfile.dev` with the Vite dev server and a runtime `VITE_BACKEND_URL` environment variable so the production backend URL is injected at container start rather than baked into the image
+
 ### 2026-04-03 — UI redesign
 [Back to Top](#top)
 
@@ -551,9 +575,9 @@ Health check endpoint. Returns `{"status": "ok"}`. No authentication required. U
 - Fixed render bug in `SearchResults`: "No media." was not shown when `multimedia[4].url` was missing; stale image URL also persisted when switching articles
 - Fixed `DyslexiaContext` tests: `userEvent.click` was not flushing React state updates and `useEffect` side effects synchronously; wrapped clicks in `await act(async () => {...})` so `localStorage` and `document.body` assertions are reliable
 - Fixed `SearchResults` headline-editor tests: `findByText` was matching the `<option>` element before the article detail pane loaded; changed wait condition to `findByRole('heading', ...)` to target the correct element
-- Added full frontend test suite (Jest + React Testing Library) and backend test suite (pytest)
+- Added full frontend test suite (Vitest + React Testing Library) and backend test suite (pytest)
 - Added GitHub Actions CI/CD workflow: tests must pass before deployment to GitHub Pages proceeds
-- Renamed Docker Compose files for clarity (`docker-compose.dev.yml`, `docker-compose.prod.yml`)
+- Renamed Docker Compose files for clarity (`docker-compose-dev.yml`, `docker-compose-prod.yml`)
 
 ### 2026-03-13 — Major redesign
 [Back to Top](#top)
